@@ -58,7 +58,11 @@ struct snd_soc_dobj_control {
 
 /* dynamic widget object */
 struct snd_soc_dobj_widget {
-	unsigned int kcontrol_type;	/* kcontrol type: mixer, enum, bytes */
+	/*
+	 * widgets can have multiple kcontrols
+	 * each with a different type: mixer, enum or bytes
+	 */
+	unsigned int *kcontrol_type;
 };
 
 /* generic dynamic object - all dynamic objects belong to this struct */
