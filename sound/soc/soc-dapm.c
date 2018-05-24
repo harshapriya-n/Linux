@@ -852,6 +852,8 @@ static int dapm_create_or_share_kcontrol(struct snd_soc_dapm_widget *w,
 			kcname_in_long_name = true;
 		} else {
 			switch (w->id) {
+			case snd_soc_dapm_siggen:
+			case snd_soc_dapm_effect:
 			case snd_soc_dapm_switch:
 			case snd_soc_dapm_mixer:
 			case snd_soc_dapm_pga:
@@ -1010,8 +1012,8 @@ static int dapm_new_mux(struct snd_soc_dapm_widget *w)
 	return 0;
 }
 
-/* create new dapm volume control */
-static int dapm_new_pga(struct snd_soc_dapm_widget *w)
+/* create new dapm kcontrol */
+static int dapm_new_kcontrol(struct snd_soc_dapm_widget *w)
 {
 	int i, ret;
 
@@ -3046,9 +3048,11 @@ int snd_soc_dapm_new_widgets(struct snd_soc_card *card)
 		case snd_soc_dapm_demux:
 			dapm_new_mux(w);
 			break;
+		case snd_soc_dapm_siggen:
+		case snd_soc_dapm_effect:
 		case snd_soc_dapm_pga:
 		case snd_soc_dapm_out_drv:
-			dapm_new_pga(w);
+			dapm_new_kcontrol(w);
 			break;
 		case snd_soc_dapm_dai_link:
 			dapm_new_dai_link(w);
