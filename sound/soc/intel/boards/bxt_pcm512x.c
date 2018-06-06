@@ -103,6 +103,21 @@ static struct snd_soc_dai_link dailink[] = {
 	/* CODEC<->CODEC link */
 	/* back ends */
 	{
+		.name = "DMIC0",
+		.id = 0,
+		.cpu_dai_name = "sof-audio",
+		.codec_name = "snd-soc-dummy",
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.platform_name = "sof-audio",
+                .ignore_suspend = 1,
+		.be_hw_params_fixup = NULL,
+		.dpcm_playback = 0,
+		.dpcm_capture = 1,
+		.no_pcm = 1,
+		.dai_fmt = SND_SOC_DAIFMT_PDM,
+		.init = NULL,
+        },
+	{
 		.name = "SSP5-Codec",
 		.id = 0,
 		.cpu_dai_name = "sof-audio",
