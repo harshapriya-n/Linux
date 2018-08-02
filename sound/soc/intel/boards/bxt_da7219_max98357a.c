@@ -361,6 +361,15 @@ static const struct snd_pcm_hw_constraint_list constraints_16000 = {
 	.list  = rates_16000,
 };
 
+static const unsigned int ch_mono[] = {
+	1,
+};
+
+static const struct snd_pcm_hw_constraint_list constraints_refcap = {
+	.count = ARRAY_SIZE(ch_mono),
+	.list  = ch_mono,
+};
+
 static int broxton_refcap_startup(struct snd_pcm_substream *substream)
 {
 	substream->runtime->hw.channels_max = 1;
