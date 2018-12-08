@@ -336,18 +336,14 @@ static int skl_suspend(struct device *dev)
 		skl->skl_sst->fw_loaded = false;
 	}
 
-<<<<<<< HEAD
-	return 0;
-=======
 	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
-		ret = snd_hdac_display_power(bus, false);
+		ret = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
 		if (ret < 0)
 			dev_err(bus->dev,
 				"Cannot turn OFF display power on i915\n");
 	}
 
 	return ret;
->>>>>>> parent of a2f3ba8be8ec... [BACKPORT] ALSA: hda: Refactor display power management
 }
 
 static int skl_resume(struct device *dev)
@@ -360,7 +356,7 @@ static int skl_resume(struct device *dev)
 
 	/* Turned OFF in HDMI codec driver after codec reconfiguration */
 	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
-		ret = snd_hdac_display_power(bus, true);
+		ret = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
 		if (ret < 0) {
 			dev_err(bus->dev,
 				"Cannot turn on display power on i915\n");
@@ -795,7 +791,7 @@ static int skl_i915_init(struct hdac_bus *bus)
 	if (err < 0)
 		return err;
 
-	err = snd_hdac_display_power(bus, true);
+	err = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
 	if (err < 0)
 		dev_err(bus->dev, "Cannot turn on display power on i915\n");
 
@@ -848,7 +844,7 @@ static void skl_probe_work(struct work_struct *work)
 		snd_hdac_ext_bus_link_put(bus, hlink);
 
 	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
-		err = snd_hdac_display_power(bus, false);
+		err = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
 		if (err < 0) {
 			dev_err(bus->dev, "Cannot turn off display power on i915\n");
 			skl_machine_device_unregister(skl);
@@ -865,11 +861,7 @@ static void skl_probe_work(struct work_struct *work)
 
 out_err:
 	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
-<<<<<<< HEAD
-		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
-=======
-		err = snd_hdac_display_power(bus, false);
->>>>>>> parent of a2f3ba8be8ec... [BACKPORT] ALSA: hda: Refactor display power management
+		err = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
 }
 
 /*
