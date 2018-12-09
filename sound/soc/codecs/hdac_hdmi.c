@@ -2054,13 +2054,8 @@ static int hdac_hdmi_dev_probe(struct hdac_device *hdev)
 	 * Turned off in the runtime_suspend during the first explicit
 	 * pm_runtime_suspend call.
 	 */
-	ret = snd_hdac_display_power(hdev->bus, hdev->addr, true);
-	if (ret < 0) {
-		dev_err(&hdev->dev,
-			"Cannot turn on display power on i915 err: %d\n",
-			ret);
-		return ret;
-	}
+	snd_hdac_display_power(hdev->bus, hdev->addr, true);
+
 	ret = hdac_hdmi_parse_and_map_nid(hdev, &hdmi_dais, &num_dais);
 	if (ret < 0) {
 		dev_err(&hdev->dev,
@@ -2150,9 +2145,7 @@ static int hdac_hdmi_runtime_suspend(struct device *dev)
 
 	snd_hdac_ext_bus_link_put(bus, hlink);
 
-	err = snd_hdac_display_power(bus, hdev->addr, false);
-	if (err < 0)
-		dev_err(dev, "Cannot turn off display power on i915\n");
+	snd_hdac_display_power(bus, hdev->addr, false);
 
 	return 0;
 }
@@ -2177,11 +2170,7 @@ static int hdac_hdmi_runtime_resume(struct device *dev)
 
 	snd_hdac_ext_bus_link_get(bus, hlink);
 
-	err = snd_hdac_display_power(bus, hdev->addr, true);
-	if (err < 0) {
-		dev_err(dev, "Cannot turn on display power on i915\n");
-		return err;
-	}
+	snd_hdac_display_power(bus, hdev->addr, true);
 
 	hdac_hdmi_skl_enable_all_pins(hdev);
 	hdac_hdmi_skl_enable_dp12(hdev);

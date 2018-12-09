@@ -336,14 +336,10 @@ static int skl_suspend(struct device *dev)
 		skl->skl_sst->fw_loaded = false;
 	}
 
-	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
-		ret = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
-		if (ret < 0)
-			dev_err(bus->dev,
-				"Cannot turn OFF display power on i915\n");
-	}
+	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
+		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
 
-	return ret;
+	return 0;
 }
 
 static int skl_resume(struct device *dev)
@@ -355,14 +351,8 @@ static int skl_resume(struct device *dev)
 	int ret;
 
 	/* Turned OFF in HDMI codec driver after codec reconfiguration */
-	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
-		ret = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
-		if (ret < 0) {
-			dev_err(bus->dev,
-				"Cannot turn on display power on i915\n");
-			return ret;
-		}
-	}
+	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
+		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
 
 	/*
 	 * resume only when we are not in suspend active, otherwise need to
@@ -791,9 +781,7 @@ static int skl_i915_init(struct hdac_bus *bus)
 	if (err < 0)
 		return err;
 
-	err = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
-	if (err < 0)
-		dev_err(bus->dev, "Cannot turn on display power on i915\n");
+	snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
 
 	return 0;
 }
@@ -843,14 +831,8 @@ static void skl_probe_work(struct work_struct *work)
 	list_for_each_entry(hlink, &bus->hlink_list, list)
 		snd_hdac_ext_bus_link_put(bus, hlink);
 
-	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
-		err = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
-		if (err < 0) {
-			dev_err(bus->dev, "Cannot turn off display power on i915\n");
-			skl_machine_device_unregister(skl);
-			return;
-		}
-	}
+	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
+		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
 
 	/* configure PM */
 	pm_runtime_put_noidle(bus->dev);
@@ -861,7 +843,7 @@ static void skl_probe_work(struct work_struct *work)
 
 out_err:
 	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
-		err = snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
+		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
 }
 
 /*
