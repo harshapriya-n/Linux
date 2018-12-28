@@ -21,6 +21,7 @@
 #include "ops.h"
 #include "sof-priv.h"
 
+#if 0
 static int sof_restore_kcontrols(struct snd_sof_dev *sdev)
 {
 	struct snd_sof_control *scontrol = NULL;
@@ -198,6 +199,7 @@ static int sof_send_pm_ipc(struct snd_sof_dev *sdev, int cmd)
 }
 
 static void sof_suspend_streams(struct snd_sof_dev *sdev)
+
 {
 	struct snd_sof_pcm *spcm;
 	struct snd_pcm_substream *substream;
@@ -240,6 +242,7 @@ static void sof_suspend_streams(struct snd_sof_dev *sdev)
 		mutex_unlock(&spcm->mutex);
 	}
 }
+#endif
 
 int sof_resume(struct snd_sof_dev *sdev, bool runtime_resume)
 {
@@ -280,6 +283,7 @@ int sof_resume(struct snd_sof_dev *sdev, bool runtime_resume)
 			ret);
 		return ret;
 	}
+#if 0
 
 	/* init DMA trace */
 	ret = snd_sof_init_trace(sdev);
@@ -305,7 +309,7 @@ int sof_resume(struct snd_sof_dev *sdev, bool runtime_resume)
 		dev_err(sdev->dev,
 			"error: ctx_restore ipc error during resume %d\n",
 			ret);
-
+#endif
 	return ret;
 }
 EXPORT_SYMBOL(sof_resume);
@@ -318,7 +322,7 @@ int sof_suspend(struct snd_sof_dev *sdev, bool runtime_suspend)
 	/* do nothing if dsp suspend callback is not set */
 	if (!sdev->ops->suspend)
 		return 0;
-
+#if 0
 	/* release trace */
 	snd_sof_release_trace(sdev);
 
@@ -346,7 +350,7 @@ int sof_suspend(struct snd_sof_dev *sdev, bool runtime_suspend)
 
 	/* drop all ipc */
 	sof_ipc_drop_all(sdev->ipc);
-
+#endif
 	/* power down DSP */
 	if (runtime_suspend)
 		ret = snd_sof_dsp_runtime_suspend(sdev, 0);
@@ -356,10 +360,10 @@ int sof_suspend(struct snd_sof_dev *sdev, bool runtime_suspend)
 		dev_err(sdev->dev,
 			"error: failed to power down DSP during suspend %d\n",
 			ret);
-
+#if 0
 	/* set flag for restoring kcontrols upon resuming */
 	sdev->restore_kcontrols = true;
-
+#endif
 	return ret;
 }
 EXPORT_SYMBOL(sof_suspend);
