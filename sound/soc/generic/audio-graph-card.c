@@ -146,6 +146,12 @@ static int asoc_graph_card_dai_link_of(struct device_node *cpu_port,
 		goto dai_link_of_err;
 	}
 
+	asoc_simple_card_canonicalize_platform(dai_link);
+
+	ret = asoc_simple_card_of_parse_tdm(ep, dai);
+	if (ret)
+		return ret;
+
 	ret = asoc_simple_card_parse_daifmt(dev, cpu_ep, codec_ep,
 					    NULL, &dai_link->dai_fmt);
 	if (ret < 0)
@@ -180,10 +186,13 @@ static int asoc_graph_card_dai_link_of(struct device_node *cpu_port,
 	if (ret < 0)
 		goto dai_link_of_err;
 
+<<<<<<< HEAD
 	ret = asoc_simple_card_canonicalize_dailink(dai_link);
 	if (ret < 0)
 		goto dai_link_of_err;
 
+=======
+>>>>>>> fe7ed4dec2e6... ASoC: simple-card: rename to asoc_simple_card_canonicalize_platform()
 	ret = asoc_simple_card_set_dailink_name(dev, dai_link,
 						"%s-%s",
 						dai_link->cpu_dai_name,
@@ -194,6 +203,7 @@ static int asoc_graph_card_dai_link_of(struct device_node *cpu_port,
 	dai_link->ops = &asoc_graph_card_ops;
 	dai_link->init = asoc_graph_card_dai_init;
 
+	asoc_simple_card_canonicalize_platform(dai_link);
 	asoc_simple_card_canonicalize_cpu(dai_link,
 		of_graph_get_endpoint_count(dai_link->cpu_of_node) == 1);
 
