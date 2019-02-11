@@ -539,6 +539,9 @@ static const struct sof_topology_token comp_tokens[] = {
 	{SOF_TKN_COMP_PRELOAD_COUNT,
 		SND_SOC_TPLG_TUPLE_TYPE_WORD, get_token_u32,
 		offsetof(struct sof_ipc_comp_config, preload_count), 0},
+	{SOF_TKN_COMP_FLAVOUR,
+		SND_SOC_TPLG_TUPLE_TYPE_SHORT, get_token_u16,
+		offsetof(struct sof_ipc_comp_config, flavour), 0},
 };
 
 /* SSP */
