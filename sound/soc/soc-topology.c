@@ -993,6 +993,8 @@ static int soc_tplg_denum_create(struct soc_tplg *tplg, unsigned int count,
 
 	for (i = 0; i < count; i++) {
 		ec = (struct snd_soc_tplg_enum_control *)tplg->pos;
+		tplg->pos += (sizeof(struct snd_soc_tplg_enum_control) +
+			ec->priv.size);
 
 		/* validate kcontrol */
 		if (strnlen(ec->hdr.name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN) ==
@@ -1002,9 +1004,6 @@ static int soc_tplg_denum_create(struct soc_tplg *tplg, unsigned int count,
 		se = kzalloc((sizeof(*se)), GFP_KERNEL);
 		if (se == NULL)
 			return -ENOMEM;
-
-		tplg->pos += (sizeof(struct snd_soc_tplg_enum_control) +
-			ec->priv.size);
 
 		dev_dbg(tplg->dev, "ASoC: adding enum kcontrol %s size %d\n",
 			ec->hdr.name, ec->items);
@@ -1365,10 +1364,6 @@ static struct snd_kcontrol_new *soc_tplg_dapm_widget_denum_create(
 
 	for (i = 0; i < num_kcontrols; i++) {
 		ec = (struct snd_soc_tplg_enum_control *)tplg->pos;
-
-		tplg->pos += (sizeof(struct snd_soc_tplg_enum_control) +
-				ec->priv.size);
-
 		/* validate kcontrol */
 		if (strnlen(ec->hdr.name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN) ==
 			    SNDRV_CTL_ELEM_ID_NAME_MAXLEN)
@@ -1442,6 +1437,9 @@ static struct snd_kcontrol_new *soc_tplg_dapm_widget_denum_create(
 				ec->hdr.name);
 			goto err_se;
 		}
+
+		tplg->pos += (sizeof(struct snd_soc_tplg_enum_control) +
+				ec->priv.size);
 	}
 
 	return kc;
