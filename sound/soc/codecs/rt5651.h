@@ -2082,6 +2082,7 @@ struct rt5651_priv {
 	int release_count;
 	int poll_count;
 	unsigned int jd_src;
+	bool jd_active_high;
 	unsigned int ovcd_th;
 	unsigned int ovcd_sf;
 
