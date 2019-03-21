@@ -508,8 +508,6 @@ static struct snd_soc_dai_driver byt_dai[] = {
  * Probe and remove.
  */
 
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_EDISON)
-
 static int byt_pci_probe(struct snd_sof_dev *sdev)
 {
 	struct snd_sof_pdata *pdata = sdev->pdata;
@@ -635,10 +633,6 @@ const struct snd_sof_dsp_ops sof_tng_ops = {
 	.num_drv = 3, /* we have only 3 SSPs on byt*/
 };
 EXPORT_SYMBOL(sof_tng_ops);
-
-#endif /* CONFIG_SND_SOC_SOF_EDISON */
-
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_BAYTRAIL)
 
 static int byt_acpi_probe(struct snd_sof_dev *sdev)
 {
@@ -849,7 +843,5 @@ const struct snd_sof_dsp_ops sof_cht_ops = {
 	.num_drv = ARRAY_SIZE(byt_dai),
 };
 EXPORT_SYMBOL(sof_cht_ops);
-
-#endif /* CONFIG_SND_SOC_SOF_BAYTRAIL */
 
 MODULE_LICENSE("Dual BSD/GPL");
