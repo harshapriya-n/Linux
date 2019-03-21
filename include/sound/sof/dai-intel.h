@@ -79,7 +79,8 @@ struct sof_ipc_dai_ssp_params {
 
 /* HDA Configuration Request - SOF_IPC_DAI_HDA_CONFIG */
 struct sof_ipc_dai_hda_params {
-	uint32_t link_dma_ch;
+	struct sof_ipc_hdr hdr;
+	/* TODO */
 } __packed;
 
 /* DMIC Configuration Request - SOF_IPC_DAI_DMIC_CONFIG */
