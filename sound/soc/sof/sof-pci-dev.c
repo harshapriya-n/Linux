@@ -72,6 +72,7 @@ static struct snd_soc_acpi_mach sof_tng_machines[] = {
 		.drv_name = "edison",
 		.sof_fw_filename = "sof-byt.ri",
 		.sof_tplg_filename = "sof-byt.tplg",
+		.asoc_plat_name = "baytrail-pcm-audio",
 	},
 	{}
 };
