@@ -210,18 +210,20 @@ found:
 int hda_dsp_pcm_open(struct snd_sof_dev *sdev,
 		     struct snd_pcm_substream *substream)
 {
-	struct hdac_ext_stream *dsp_stream;
-	int direction = substream->stream;
+	struct hdac_ext_stream *stream;
 
-	dsp_stream = hda_dsp_stream_get(sdev, direction);
+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+		stream = hda_dsp_stream_get_pstream(sdev);
+	else
+		stream = hda_dsp_stream_get_cstream(sdev);
 
-	if (!dsp_stream) {
+	if (!stream) {
 		dev_err(sdev->dev, "error: no stream available\n");
 		return -ENODEV;
 	}
 
 	/* binding pcm substream to hda stream */
-	substream->runtime->private_data = &dsp_stream->hstream;
+	substream->runtime->private_data = &stream->hstream;
 	return 0;
 }
 
@@ -229,10 +231,12 @@ int hda_dsp_pcm_close(struct snd_sof_dev *sdev,
 		      struct snd_pcm_substream *substream)
 {
 	struct hdac_stream *hstream = substream->runtime->private_data;
-	int direction = substream->stream;
 	int ret;
 
-	ret = hda_dsp_stream_put(sdev, direction, hstream->stream_tag);
+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+		ret = hda_dsp_stream_put_pstream(sdev, hstream->stream_tag);
+	else
+		ret = hda_dsp_stream_put_cstream(sdev, hstream->stream_tag);
 
 	if (ret) {
 		dev_dbg(sdev->dev, "stream %s not opened!\n", substream->name);
