@@ -23,7 +23,7 @@ int sof_nocodec_setup(struct device *dev,
 		      const struct snd_sof_dsp_ops *ops)
 {
 	struct snd_soc_dai_link *links;
-	int ret = 0;
+	int ret;
 
 	if (!mach)
 		return -EINVAL;
@@ -42,7 +42,12 @@ int sof_nocodec_setup(struct device *dev,
 
 	ret = sof_bes_setup(dev, ops, links, ops->num_drv,
 			    &sof_nocodec_card);
-	return ret;
+	if (ret) {
+		kfree(links);
+		return ret;
+	}
+
+	return 0;
 }
 EXPORT_SYMBOL(sof_nocodec_setup);
 
