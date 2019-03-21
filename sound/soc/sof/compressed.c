@@ -8,7 +8,6 @@
 // Author: Liam Girdwood <liam.r.girdwood@linux.intel.com>
 //
 
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <sound/compress_driver.h>
 #include "sof-priv.h"
@@ -180,5 +179,3 @@ struct snd_compr_ops sof_compressed_ops = {
 	.get_codec_caps = sof_compressed_get_codec_caps,
 };
 EXPORT_SYMBOL(sof_compressed_ops);
-
-MODULE_LICENSE("Dual BSD/GPL");
