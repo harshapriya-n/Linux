@@ -29,7 +29,6 @@ static struct sof_dev_desc bxt_desc = {
 	.resindex_imr_base	= -1,
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
-	.chip_info = &apl_chip_info,
 	.nocodec_fw_filename = "intel/sof-apl.ri",
 	.nocodec_tplg_filename = "intel/sof-apl-nocodec.tplg"
 };
@@ -43,7 +42,6 @@ static struct sof_dev_desc glk_desc = {
 	.resindex_imr_base	= -1,
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
-	.chip_info = &apl_chip_info,
 	.nocodec_fw_filename = "intel/sof-glk.ri",
 	.nocodec_tplg_filename = "intel/sof-glk-nocodec.tplg"
 };
@@ -68,7 +66,6 @@ static const struct sof_dev_desc tng_desc = {
 	.resindex_imr_base	= 0,
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
-	.chip_info = &tng_chip_info,
 	.nocodec_fw_filename = "intel/sof-byt.ri",
 	.nocodec_tplg_filename = "intel/sof-byt.tplg"
 };
@@ -82,23 +79,8 @@ static const struct sof_dev_desc cnl_desc = {
 	.resindex_imr_base	= -1,
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
-	.chip_info = &cnl_chip_info,
 	.nocodec_fw_filename = "intel/sof-cnl.ri",
 	.nocodec_tplg_filename = "intel/sof-cnl.tplg"
-};
-#endif
-
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_ICELAKE)
-static const struct sof_dev_desc icl_desc = {
-	.machines               = snd_soc_acpi_intel_icl_machines,
-	.resindex_lpe_base      = 0,
-	.resindex_pcicfg_base   = -1,
-	.resindex_imr_base      = -1,
-	.irqindex_host_ipc      = -1,
-	.resindex_dma_base      = -1,
-	.chip_info = &cnl_chip_info,
-	.nocodec_fw_filename = "intel/sof-icl.ri",
-	.nocodec_tplg_filename = "intel/sof-icl-nocodec.tplg"
 };
 #endif
 
@@ -110,7 +92,6 @@ static struct sof_dev_desc skl_desc = {
 	.resindex_imr_base	= -1,
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
-	.chip_info = &skl_chip_info,
 	.nocodec_fw_filename = "intel/sof-skl.ri",
 	.nocodec_tplg_filename = "intel/sof-skl-nocodec.tplg"
 };
@@ -124,9 +105,21 @@ static struct sof_dev_desc kbl_desc = {
 	.resindex_imr_base	= -1,
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
-	.chip_info = &skl_chip_info,
 	.nocodec_fw_filename = "intel/sof-kbl.ri",
 	.nocodec_tplg_filename = "intel/sof-kbl-nocodec.tplg"
+};
+#endif
+
+#if IS_ENABLED(CONFIG_SND_SOC_SOF_ICELAKE)
+static const struct sof_dev_desc icl_desc = {
+	.machines               = snd_soc_acpi_intel_icl_machines,
+	.resindex_lpe_base      = 0,
+	.resindex_pcicfg_base   = -1,
+	.resindex_imr_base      = -1,
+	.irqindex_host_ipc      = -1,
+	.resindex_dma_base      = -1,
+	.nocodec_fw_filename = "intel/sof-icl.ri",
+	.nocodec_tplg_filename = "intel/sof-icl-nocodec.tplg"
 };
 #endif
 
