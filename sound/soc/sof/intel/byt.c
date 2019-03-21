@@ -516,7 +516,7 @@ static int byt_pci_probe(struct snd_sof_dev *sdev)
 {
 	struct snd_sof_pdata *pdata = sdev->pdata;
 	const struct sof_dev_desc *desc = pdata->desc;
-	struct pci_dev *pci = to_pci_dev(sdev->dev);
+	struct pci_dev *pci = sdev->pci;
 	u32 base, size;
 	int ret = 0;
 
