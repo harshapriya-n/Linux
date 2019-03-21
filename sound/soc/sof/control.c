@@ -162,17 +162,18 @@ int snd_sof_bytes_put(struct snd_kcontrol *kcontrol,
 	struct sof_abi_hdr *data = cdata->data;
 	int ret, err;
 
-	if (data->size > be->max) {
-		dev_err_ratelimited(sdev->dev, "error: size too big %d bytes max is %d\n",
-				    data->size, be->max);
-		return -EINVAL;
-	}
-
 	ret = pm_runtime_get_sync(sdev->dev);
 	if (ret < 0) {
 		dev_err_ratelimited(sdev->dev, "error: bytes put failed to resume %d\n",
 				    ret);
 		return ret;
+	}
+
+	if (data->size > be->max) {
+		dev_err_ratelimited(sdev->dev, "error: size too big %d bytes max is %d\n",
+				    data->size, be->max);
+		ret = -EINVAL;
+		goto out;
 	}
 
 	/* copy from kcontrol */
@@ -182,6 +183,7 @@ int snd_sof_bytes_put(struct snd_kcontrol *kcontrol,
 	snd_sof_ipc_set_comp_data(sdev->ipc, scontrol, SOF_IPC_COMP_SET_DATA,
 				  SOF_CTRL_TYPE_DATA_SET, scontrol->cmd);
 
+out:
 	pm_runtime_mark_last_busy(sdev->dev);
 	err = pm_runtime_put_autosuspend(sdev->dev);
 	if (err < 0)
@@ -207,12 +209,20 @@ int snd_sof_bytes_ext_put(struct snd_kcontrol *kcontrol,
 	int max_size = SOF_IPC_MSG_MAX_SIZE -
 		sizeof(const struct sof_ipc_ctrl_data);
 
+	ret = pm_runtime_get_sync(sdev->dev);
+	if (ret < 0) {
+		dev_err_ratelimited(sdev->dev, "error: bytes_ext put failed to resume %d\n",
+				    ret);
+		return ret;
+	}
+
 	/* The beginning of bytes data contains a header from where
 	 * the length (as bytes) is needed to know the correct copy
 	 * length of data from tlvd->tlv.
 	 */
 	if (copy_from_user(&header, tlvd, sizeof(const struct snd_ctl_tlv))) {
-		return -EFAULT;
+		ret = -EFAULT;
+		goto out;
 	}
 	/* The maximum length that can be copied is limited by IPC max
 	 * length and topology defined length for ext bytes control.
@@ -222,48 +232,48 @@ int snd_sof_bytes_ext_put(struct snd_kcontrol *kcontrol,
 	if (header.length > max_size) {
 		dev_err_ratelimited(sdev->dev, "error: Bytes data size %d exceeds max %d.\n",
 				    header.length, max_size);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	/* Check that header id matches the command */
 	if (header.numid != scontrol->cmd) {
 		dev_err_ratelimited(sdev->dev, "error: incorrect numid %d\n",
 				    header.numid);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	if (copy_from_user(cdata->data, tlvd->tlv, header.length)) {
-		return -EFAULT;
+		ret = -EFAULT;
+		goto out;
 	}
 
 	if (cdata->data->magic != SOF_ABI_MAGIC) {
 		dev_err_ratelimited(sdev->dev, "error: Wrong ABI magic 0x%08x.\n",
 				    cdata->data->magic);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	if (SOF_ABI_VERSION_INCOMPATIBLE(SOF_ABI_VERSION, cdata->data->abi)) {
 		dev_err_ratelimited(sdev->dev, "error: Incompatible ABI version 0x%08x.\n",
 				    cdata->data->abi);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	if (cdata->data->size + sizeof(const struct sof_abi_hdr) > max_size) {
 		dev_err_ratelimited(sdev->dev, "error: Mismatch in ABI data size (truncated?).\n");
-		return -EINVAL;
-	}
-
-	ret = pm_runtime_get_sync(sdev->dev);
-	if (ret < 0) {
-		dev_err_ratelimited(sdev->dev, "error: bytes_ext put failed to resume %d\n",
-				    ret);
-		return ret;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	/* notify DSP of mixer updates */
 	snd_sof_ipc_set_comp_data(sdev->ipc, scontrol, SOF_IPC_COMP_SET_DATA,
 				  SOF_CTRL_TYPE_DATA_SET, scontrol->cmd);
 
+out:
 	pm_runtime_mark_last_busy(sdev->dev);
 	err = pm_runtime_put_autosuspend(sdev->dev);
 	if (err < 0)
