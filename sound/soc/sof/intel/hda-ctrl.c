@@ -163,3 +163,4 @@ int hda_dsp_ctrl_init_chip(struct snd_sof_dev *sdev, bool full_reset)
 	return ret;
 }
 #endif
+
