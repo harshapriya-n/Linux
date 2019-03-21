@@ -371,11 +371,14 @@ err:
 }
 
 static void cl_skl_cldma_fill_buffer(struct snd_sof_dev *sdev,
-				     unsigned int size,
+				     unsigned int bufsize,
+				     unsigned int copysize,
 				     const void *curr_pos,
 				     bool intr_enable, bool trigger)
 {
-	/* 1. copy the image into the buffer. */
+	/* 1. copy the image into the buffer with the maximum buffer size. */
+	unsigned int size = (bufsize == copysize) ? bufsize : copysize;
+
 	memcpy(sdev->dmab.area, curr_pos, size);
 
 	/* 2. Set the interrupt. */
@@ -395,7 +398,7 @@ cl_skl_cldma_copy_to_buf(struct snd_sof_dev *sdev, const void *bin,
 			 u32 total_size, u32 bufsize)
 {
 	unsigned int bytes_left = total_size;
-	const u8 *curr_pos = (u8 *)bin;
+	const void *curr_pos = bin;
 
 	if (total_size <= 0)
 		return -EINVAL;
@@ -407,7 +410,7 @@ cl_skl_cldma_copy_to_buf(struct snd_sof_dev *sdev, const void *bin,
 			dev_dbg(sdev->dev, "cldma copy 0x%x bytes\n",
 				bufsize);
 
-			cl_skl_cldma_fill_buffer(sdev, bufsize,
+			cl_skl_cldma_fill_buffer(sdev, bufsize, bufsize,
 						 curr_pos, true, true);
 
 			bytes_left -= bufsize;
@@ -418,7 +421,7 @@ cl_skl_cldma_copy_to_buf(struct snd_sof_dev *sdev, const void *bin,
 				bytes_left);
 
 			cl_skl_cldma_set_intr(sdev, false);
-			cl_skl_cldma_fill_buffer(sdev, bytes_left,
+			cl_skl_cldma_fill_buffer(sdev, bufsize, bytes_left,
 						 curr_pos, false, false);
 			return 0;
 		}
