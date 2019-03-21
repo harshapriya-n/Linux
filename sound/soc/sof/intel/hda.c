@@ -297,27 +297,35 @@ static int hda_init_caps(struct snd_sof_dev *sdev)
 		 * If no machine driver is found, then:
 		 *
 		 * hda machine driver is used if :
-		 * 1. there is one HDMI codec and one external HDAudio codec
-		 * 2. only HDMI codec
+		 * 1. there are HDMI codec and one external HDAudio codec
+		 * 2. only HDMI codec and NOCODEC is not enabled
+		 *
+		 * nocodec machine driver would be used if:
+		 * 1. only HDMI codec and but NOCODEC is enabled
+		 * 2. there is no codec found
 		 */
 		if (!pdata->machine && codec_num <= 2 &&
 		    HDA_IDISP_CODEC(bus->codec_mask)) {
-			hda_mach = snd_soc_acpi_intel_hda_machines;
-			pdata->machine = hda_mach;
+			if (codec_num == 2 ||
+			    !IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)) {
+				hda_mach = snd_soc_acpi_intel_hda_machines;
+				pdata->machine = hda_mach;
 
-			/* topology: use the info from hda_machines */
-			pdata->tplg_filename =
-				hda_mach->sof_tplg_filename;
+				/* topology: use the info from hda_machines */
+				pdata->tplg_filename =
+					hda_mach->sof_tplg_filename;
 
-			/* firmware: pick the first in machine list */
-			mach = pdata->desc->machines;
-			pdata->fw_filename = mach->sof_fw_filename;
+				/* firmware: pick the first in machine list */
+				mach = pdata->desc->machines;
+				pdata->fw_filename = mach->sof_fw_filename;
 
-			dev_info(bus->dev, "using HDA machine driver %s now\n",
-				 hda_mach->drv_name);
+				dev_info(bus->dev, "using HDA machine driver %s now\n",
+					 hda_mach->drv_name);
+			}
 
 			/* fixup topology file for HDMI only platforms */
-			if (codec_num == 1) {
+			if (codec_num == 1 &&
+			    !IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)) {
 				/* use local variable for readability */
 				tplg_filename = pdata->tplg_filename;
 				tplg_filename = fixup_tplg_name(sdev, tplg_filename);
