@@ -43,17 +43,13 @@ struct snd_sof_pdata {
 	/* descriptor */
 	const struct sof_dev_desc *desc;
 
-	/* firmware and topology filenames */
-	const char *fw_filename_prefix;
-	const char *fw_filename;
-	const char *tplg_filename_prefix;
-	const char *tplg_filename;
+	/* SPI data */
+	int gpio;
+	unsigned int active;
 
 	/* machine */
 	struct platform_device *pdev_mach;
 	const struct snd_soc_acpi_mach *machine;
-
-	void *hw_pdata;
 };
 
 /*

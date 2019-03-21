@@ -21,7 +21,6 @@
 #include <sound/sof/topology.h>
 #include <sound/sof/info.h>
 #include <sound/sof/pm.h>
-#include <sound/sof.h>
 #include <uapi/sound/sof/fw.h>
 
 /* debug flags */
@@ -59,6 +58,7 @@ struct snd_sof_ipc;
 struct snd_sof_debugfs_map;
 struct snd_soc_tplg_ops;
 struct snd_soc_component;
+struct sof_intel_hda_dev;
 struct snd_sof_pdata;
 
 /*
@@ -311,6 +311,7 @@ struct snd_sof_dev {
 	/* DSP HW differentiation */
 	struct snd_sof_pdata *pdata;
 	const struct snd_sof_dsp_ops *ops;
+	struct sof_intel_hda_dev *hda;	/* for HDA based DSP HW */
 	const struct sof_arch_ops *arch_ops;
 
 	/* IPC */
@@ -375,6 +376,9 @@ struct snd_sof_dev {
 
 	void *private;			/* core does not touch this */
 };
+
+#define sof_to_bus(s)  (&(s)->hda->hbus.core)
+#define sof_to_hbus(s) (&(s)->hda->hbus)
 
 /*
  * SOF platform private struct used as drvdata of

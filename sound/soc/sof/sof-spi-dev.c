@@ -54,7 +54,6 @@ static int sof_spi_probe(struct spi_device *spi)
 	const struct sof_intel_dsp_desc *chip_info;
 	struct snd_sof_pdata *sof_pdata;
 	struct sof_platform_priv *priv;
-	struct sof_spi_dev *sof_spi;
 	const char *tplg, *fw;
 	struct gpio_desc *gpiod;
 	int ret, irq;
@@ -93,12 +92,7 @@ static int sof_spi_probe(struct spi_device *spi)
 	if (IS_ERR(gpiod))
 		return PTR_ERR(gpiod);
 
-	sof_spi = devm_kzalloc(dev, sizeof(*sof_spi), GFP_KERNEL);
-	if (!sof_spi)
-		return -ENOMEM;
-
-	sof_spi->gpio = desc_to_gpio(gpiod);
-	sof_pdata->hw_pdata = sof_spi;
+	sof_pdata->gpio = desc_to_gpio(gpiod);
 
 	irq = gpiod_to_irq(gpiod);
 	if (irq < 0)
