@@ -121,11 +121,14 @@ int snd_sof_parse_module_memcpy(struct snd_sof_dev *sdev,
 		}
 
 		switch (block->type) {
-		case SOF_FW_BLK_TYPE_RSRVD0:
-		case SOF_FW_BLK_TYPE_SRAM...SOF_FW_BLK_TYPE_RSRVD14:
+		case SOF_BLK_IMAGE:
+		case SOF_BLK_CACHE:
+		case SOF_BLK_REGS:
+		case SOF_BLK_SIG:
+		case SOF_BLK_ROM:
 			continue;	/* not handled atm */
-		case SOF_FW_BLK_TYPE_IRAM:
-		case SOF_FW_BLK_TYPE_DRAM:
+		case SOF_BLK_TEXT:
+		case SOF_BLK_DATA:
 			offset = block->offset;
 			break;
 		default:
