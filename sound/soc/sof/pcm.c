@@ -652,7 +652,7 @@ static int sof_pcm_probe(struct snd_soc_component *component)
 	if (ret < 0) {
 		dev_err(sdev->dev, "error: failed to load DSP topology %d\n",
 			ret);
-		return ret;
+		goto err;
 	}
 
 	/* enable runtime PM with auto suspend */
@@ -666,6 +666,7 @@ static int sof_pcm_probe(struct snd_soc_component *component)
 	if (err < 0)
 		dev_err(sdev->dev, "error: failed to enter PM idle %d\n", err);
 
+err:
 	return ret;
 }
 

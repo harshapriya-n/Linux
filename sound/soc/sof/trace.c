@@ -37,12 +37,14 @@ static size_t sof_wait_trace_avail(struct snd_sof_dev *sdev,
 
 	if (signal_pending(current)) {
 		remove_wait_queue(&sdev->trace_sleep, &wait);
-	} else {
-		/* set timeout to max value, no error code */
-		schedule_timeout(MAX_SCHEDULE_TIMEOUT);
-		remove_wait_queue(&sdev->trace_sleep, &wait);
+		goto out;
 	}
 
+	/* set timeout to max value, no error code */
+	schedule_timeout(MAX_SCHEDULE_TIMEOUT);
+	remove_wait_queue(&sdev->trace_sleep, &wait);
+
+out:
 	/* return bytes available for copy */
 	if (sdev->host_offset < pos)
 		return buffer_size - pos;
