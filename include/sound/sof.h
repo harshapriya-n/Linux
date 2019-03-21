@@ -17,6 +17,13 @@
 
 struct snd_sof_dsp_ops;
 
+/* SOF probe type */
+enum sof_device_type {
+	SOF_DEVICE_PCI = 0,
+	SOF_DEVICE_APCI,
+	SOF_DEVICE_SPI
+};
+
 /*
  * SOF Platform data.
  */
@@ -29,6 +36,7 @@ struct snd_sof_pdata {
 
 	/* parent device */
 	struct device *dev;
+	enum sof_device_type type;
 
 	/*
 	 * notification callback used if the hardware initialization
