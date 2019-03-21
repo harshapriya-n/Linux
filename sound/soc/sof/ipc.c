@@ -395,8 +395,8 @@ static void ipc_msgs_rx(struct work_struct *work)
 	case SOF_IPC_FW_READY:
 		/* check for FW boot completion */
 		if (!sdev->boot_complete) {
-			if (sof_ops(sdev)->fw_ready)
-				err = sof_ops(sdev)->fw_ready(sdev, cmd);
+			if (sdev->ops->fw_ready)
+				err = sdev->ops->fw_ready(sdev, cmd);
 			if (err < 0) {
 				dev_err(sdev->dev, "error: DSP firmware boot timeout %d\n",
 					err);
