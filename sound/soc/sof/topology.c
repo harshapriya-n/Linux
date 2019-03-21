@@ -1467,6 +1467,7 @@ static int sof_effect_fir_load(struct snd_soc_component *scomp, int index,
 	fir->comp.pipeline_id = index;
 	fir->config.hdr.size = sizeof(fir->config);
 
+
 	ret = sof_parse_tokens(scomp, &fir->config, comp_tokens,
 			       ARRAY_SIZE(comp_tokens), private->array,
 			       le32_to_cpu(private->size));
@@ -2076,8 +2077,10 @@ static int sof_link_dmic_load(struct snd_soc_component *scomp, int index,
 					config->dmic.num_pdm_active;
 
 	ipc_config = kzalloc(size, GFP_KERNEL);
-	if (!ipc_config)
+	if (!ipc_config) {
+		dev_err(sdev->dev, "error: allocating memory for config\n");
 		return -ENOMEM;
+	}
 
 	/* copy the common dai config and dmic params */
 	memcpy(ipc_config, config, sizeof(*config));
