@@ -144,11 +144,11 @@ void sof_block_write(struct snd_sof_dev *sdev, u32 offset, void *src,
 		 * bytes, and write back to dest. For unaffected bytes, it
 		 * should not be changed
 		 */
-		tmp = ioread32(dest + m * 4);
+		__ioread32_copy(&tmp, dest + m * 4, 1);
 		tmp &= ~affected_mask;
 
 		tmp |= *(u32 *)(src_byte + m * 4) & affected_mask;
-		iowrite32(tmp, dest + m * 4);
+		__iowrite32_copy(dest + m * 4, &tmp, 1);
 	}
 }
 EXPORT_SYMBOL(sof_block_write);
