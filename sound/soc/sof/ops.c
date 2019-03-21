@@ -164,7 +164,8 @@ int snd_sof_dsp_register_poll(struct snd_sof_dev *sdev, u32 bar, u32 offset,
 		timeout /= 10;
 
 		for (time = timeout; time > 0; time--) {
-			if ((snd_sof_dsp_read(sdev, bar, offset) & mask) == target)
+			if ((snd_sof_dsp_read(sdev, bar, offset) & mask) ==
+				target)
 				break;
 
 			usleep_range(5000, 10000);
