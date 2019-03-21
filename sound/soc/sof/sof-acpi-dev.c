@@ -154,14 +154,6 @@ static const struct dev_pm_ops sof_acpi_pm = {
 			   NULL)
 };
 
-static void sof_acpi_probe_complete(struct device *dev)
-{
-	/* allow runtime_pm */
-	pm_runtime_set_autosuspend_delay(dev, SND_SOF_SUSPEND_DELAY_MS);
-	pm_runtime_use_autosuspend(dev);
-	pm_runtime_enable(dev);
-}
-
 static int sof_acpi_probe(struct platform_device *pdev)
 {
 	const struct acpi_device_id *id;
@@ -230,11 +222,6 @@ static int sof_acpi_probe(struct platform_device *pdev)
 	sof_pdata->dev = &pdev->dev;
 	sof_pdata->platform = dev_name(dev);
 
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_PROBE_WORK_QUEUE)
-	/* set callback to enable runtime_pm */
-	sof_pdata->sof_probe_complete = sof_acpi_probe_complete;
-#endif
-
 	/* call sof helper for DSP hardware probe */
 	ret = snd_sof_device_probe(dev, sof_pdata);
 	if (ret) {
@@ -242,9 +229,10 @@ static int sof_acpi_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-#if !IS_ENABLED(CONFIG_SND_SOC_SOF_PROBE_WORK_QUEUE)
-	sof_acpi_probe_complete(dev);
-#endif
+	/* allow runtime_pm */
+	pm_runtime_set_autosuspend_delay(dev, SND_SOF_SUSPEND_DELAY_MS);
+	pm_runtime_use_autosuspend(dev);
+	pm_runtime_enable(dev);
 
 	return ret;
 }
