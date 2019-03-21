@@ -22,7 +22,6 @@
 #include <asm/cpu_device_id.h>
 #include <asm/iosf_mbi.h>
 #include "sof-priv.h"
-#include "ops.h"
 
 /* platform specific devices */
 #include "intel/shim.h"
@@ -126,7 +125,7 @@ static const struct dev_pm_ops sof_acpi_pm = {
 	.suspend_late = snd_sof_suspend_late,
 };
 
-static const struct sof_ops_table acpi_mach_ops[] = {
+static const struct sof_ops_table mach_ops[] = {
 #if IS_ENABLED(CONFIG_SND_SOC_SOF_HASWELL)
 	{&sof_acpi_haswell_desc, &sof_hsw_ops},
 #endif
@@ -139,6 +138,20 @@ static const struct sof_ops_table acpi_mach_ops[] = {
 	{&sof_acpi_cherrytrail_desc, &sof_cht_ops},
 #endif
 };
+
+static struct snd_sof_dsp_ops *sof_acpi_get_ops(const struct sof_dev_desc *d)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(mach_ops); i++) {
+		if (d == mach_ops[i].desc) {
+			return mach_ops[i].ops;
+		}
+	}
+
+	/* not found */
+	return NULL;
+}
 
 static int sof_acpi_probe(struct platform_device *pdev)
 {
@@ -172,7 +185,7 @@ static int sof_acpi_probe(struct platform_device *pdev)
 #endif
 
 	/* get ops for platform */
-	ops = sof_get_ops(desc, acpi_mach_ops, ARRAY_SIZE(acpi_mach_ops));
+	ops = sof_acpi_get_ops(desc);
 	if (!ops) {
 		dev_err(dev, "error: no matching ACPI descriptor ops\n");
 		return -ENODEV;
