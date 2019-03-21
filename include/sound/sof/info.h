@@ -26,7 +26,6 @@ enum sof_ipc_ext_data {
 
 /* FW version - SOF_IPC_GLB_VERSION */
 struct sof_ipc_fw_version {
-	struct sof_ipc_hdr hdr;
 	uint16_t major;
 	uint16_t minor;
 	uint16_t micro;
@@ -42,7 +41,7 @@ struct sof_ipc_fw_version {
 
 /* FW ready Message - sent by firmware when boot has completed */
 struct sof_ipc_fw_ready {
-	struct sof_ipc_cmd_hdr hdr;
+	struct sof_ipc_hdr hdr;
 	uint32_t dspbox_offset;	 /* dsp initiated IPC mailbox */
 	uint32_t hostbox_offset; /* host initiated IPC mailbox */
 	uint32_t dspbox_size;
@@ -52,12 +51,9 @@ struct sof_ipc_fw_ready {
 	/* Miscellaneous debug flags showing build/debug features enabled */
 	union {
 		uint64_t reserved;
-		struct {
-			uint64_t build:1;
-			uint64_t locks:1;
-			uint64_t locks_verbose:1;
-			uint64_t gdb:1;
-		} bits;
+		uint64_t build:1;
+		uint64_t locks:1;
+		uint64_t locks_verbose:1;
 	} debug;
 
 	/* reserved for future use */
@@ -78,12 +74,11 @@ enum sof_ipc_region {
 };
 
 struct sof_ipc_ext_data_hdr {
-	struct sof_ipc_cmd_hdr hdr;
+	struct sof_ipc_hdr hdr;
 	uint32_t type;		/**< SOF_IPC_EXT_ */
 } __packed;
 
 struct sof_ipc_dma_buffer_elem {
-	struct sof_ipc_hdr hdr;
 	uint32_t type;		/**< SOF_IPC_REGION_ */
 	uint32_t id;		/**< platform specific - used to map to host memory */
 	struct sof_ipc_host_buffer buffer;
@@ -99,7 +94,6 @@ struct sof_ipc_dma_buffer_data {
 }  __packed;
 
 struct sof_ipc_window_elem {
-	struct sof_ipc_hdr hdr;
 	uint32_t type;		/**< SOF_IPC_REGION_ */
 	uint32_t id;		/**< platform specific - used to map to host memory */
 	uint32_t flags;		/**< R, W, RW, etc - to define */

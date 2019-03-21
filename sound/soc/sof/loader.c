@@ -199,7 +199,8 @@ static int load_modules(struct snd_sof_dev *sdev, const struct firmware *fw)
 	return 0;
 }
 
-int snd_sof_load_firmware_memcpy(struct snd_sof_dev *sdev)
+int snd_sof_load_firmware_memcpy(struct snd_sof_dev *sdev,
+				 bool first_boot)
 {
 	struct snd_sof_pdata *plat_data = dev_get_platdata(sdev->dev);
 	const char *fw_filename;
@@ -247,12 +248,15 @@ error:
 }
 EXPORT_SYMBOL(snd_sof_load_firmware_memcpy);
 
-int snd_sof_load_firmware(struct snd_sof_dev *sdev)
+int snd_sof_load_firmware(struct snd_sof_dev *sdev,
+			  bool first_boot)
 {
 	dev_dbg(sdev->dev, "loading firmware\n");
 
+	sdev->first_boot = first_boot;
+
 	if (sdev->ops->load_firmware)
-		return sdev->ops->load_firmware(sdev);
+		return sdev->ops->load_firmware(sdev, first_boot);
 	return 0;
 }
 EXPORT_SYMBOL(snd_sof_load_firmware);

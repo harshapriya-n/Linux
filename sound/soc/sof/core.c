@@ -244,7 +244,6 @@ static int sof_probe(struct platform_device *pdev)
 	sdev->ops = plat_data->machine->pdata;
 
 	sdev->pdata = plat_data;
-	sdev->first_boot = true;
 	INIT_LIST_HEAD(&sdev->pcm_list);
 	INIT_LIST_HEAD(&sdev->kcontrol_list);
 	INIT_LIST_HEAD(&sdev->widget_list);
@@ -290,7 +289,7 @@ static int sof_probe(struct platform_device *pdev)
 	}
 
 	/* load the firmware */
-	ret = snd_sof_load_firmware(sdev);
+	ret = snd_sof_load_firmware(sdev, true);
 	if (ret < 0) {
 		dev_err(sdev->dev, "error: failed to load DSP firmware %d\n",
 			ret);
@@ -312,9 +311,6 @@ static int sof_probe(struct platform_device *pdev)
 		dev_warn(sdev->dev,
 			 "warning: failed to initialize trace %d\n", ret);
 	}
-
-	/* hereafter all FW boot flows are for PM reasons */
-	sdev->first_boot = false;
 
 	/* now register audio DSP platform driver and dai */
 	ret = snd_soc_register_component(&pdev->dev,  &sdev->plat_drv,
