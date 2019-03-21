@@ -271,7 +271,7 @@ struct snd_sof_pcm_stream {
 	struct snd_pcm_substream *substream;
 };
 
-/* ALSA SOF PCM device */
+/* ASLA SOF PCM device */
 struct snd_sof_pcm {
 	struct snd_sof_dev *sdev;
 	struct snd_soc_tplg_pcm pcm;
