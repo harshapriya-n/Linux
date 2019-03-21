@@ -255,22 +255,23 @@ static int sof_machine_check(struct snd_sof_dev *sdev)
 	return 0;
 }
 
-int snd_sof_device_probe(struct device *dev, struct snd_sof_pdata *plat_data)
+static int sof_probe(struct platform_device *pdev)
 {
+	struct snd_sof_pdata *plat_data = dev_get_platdata(&pdev->dev);
 	struct snd_sof_dev *sdev;
 	const char *drv_name;
 	const void *mach;
 	int size;
 	int ret;
 
-	sdev = devm_kzalloc(dev, sizeof(*sdev), GFP_KERNEL);
+	sdev = devm_kzalloc(&pdev->dev, sizeof(*sdev), GFP_KERNEL);
 	if (!sdev)
 		return -ENOMEM;
 
-	dev_dbg(dev, "probing SOF DSP device....\n");
+	dev_dbg(&pdev->dev, "probing SOF DSP device....\n");
 
 	/* initialize sof device */
-	sdev->dev = dev;
+	sdev->dev = &pdev->dev;
 	sdev->parent = plat_data->dev;
 	if dev_is_pci(plat_data->dev)
 		sdev->pci = to_pci_dev(plat_data->dev);
@@ -362,7 +363,7 @@ int snd_sof_device_probe(struct device *dev, struct snd_sof_pdata *plat_data)
 	sdev->first_boot = false;
 
 	/* now register audio DSP platform driver and dai */
-	ret = snd_soc_register_component(dev, &sdev->plat_drv,
+	ret = snd_soc_register_component(&pdev->dev, &sdev->plat_drv,
 					 sof_ops(sdev)->drv,
 					 sof_ops(sdev)->num_drv);
 	if (ret < 0) {
@@ -391,7 +392,7 @@ int snd_sof_device_probe(struct device *dev, struct snd_sof_pdata *plat_data)
 	return 0;
 
 comp_err:
-	snd_soc_unregister_component(dev);
+	snd_soc_unregister_component(&pdev->dev);
 fw_run_err:
 	snd_sof_fw_unload(sdev);
 fw_load_err:
@@ -403,21 +404,13 @@ dbg_err:
 
 	return ret;
 }
-EXPORT_SYMBOL(snd_sof_device_probe);
 
-static int sof_probe(struct platform_device *pdev)
+static int sof_remove(struct platform_device *pdev)
 {
-	struct snd_sof_pdata *plat_data = dev_get_platdata(&pdev->dev);
-
-	return snd_sof_device_probe(&pdev->dev, plat_data);
-}
-
-int snd_sof_device_remove(struct device *dev)
-{
-	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
+	struct snd_sof_dev *sdev = dev_get_drvdata(&pdev->dev);
 	struct snd_sof_pdata *pdata = sdev->pdata;
 
-	snd_soc_unregister_component(dev);
+	snd_soc_unregister_component(&pdev->dev);
 	snd_sof_fw_unload(sdev);
 	snd_sof_ipc_free(sdev);
 	snd_sof_free_debug(sdev);
@@ -435,12 +428,6 @@ int snd_sof_device_remove(struct device *dev)
 	release_firmware(pdata->fw);
 
 	return 0;
-}
-EXPORT_SYMBOL(snd_sof_device_remove);
-
-static int sof_remove(struct platform_device *pdev)
-{
-	return snd_sof_device_remove(&pdev->dev);
 }
 
 static struct platform_driver sof_driver = {
