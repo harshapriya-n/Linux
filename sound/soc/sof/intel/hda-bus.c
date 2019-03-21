@@ -75,9 +75,10 @@ static const struct hdac_io_ops io_ops = {
 
 /*
  * This can be used for both with/without hda link support.
+ * Returns 0 if successful, or a negative error code.
  */
-void sof_hda_bus_init(struct hdac_bus *bus, struct device *dev,
-		      const struct hdac_ext_bus_ops *ext_ops)
+int sof_hda_bus_init(struct hdac_bus *bus, struct device *dev,
+		     const struct hdac_ext_bus_ops *ext_ops)
 {
 	static int idx;
 
@@ -102,4 +103,6 @@ void sof_hda_bus_init(struct hdac_bus *bus, struct device *dev,
 
 	mutex_init(&bus->lock);
 	bus->cmd_dma_state = true;
+
+	return 0;
 }
