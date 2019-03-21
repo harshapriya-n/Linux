@@ -14,6 +14,7 @@
 int snd_sof_pci_update_bits_unlocked(struct snd_sof_dev *sdev, u32 offset,
 				     u32 mask, u32 value)
 {
+	bool change;
 	unsigned int old, new;
 	u32 ret = ~0; /* explicit init to remove uninitialized use warnings */
 
@@ -24,14 +25,14 @@ int snd_sof_pci_update_bits_unlocked(struct snd_sof_dev *sdev, u32 offset,
 	old = ret;
 	new = (old & (~mask)) | (value & mask);
 
-	if (old == new)
-		return false;
+	change = (old != new);
+	if (change) {
+		pci_write_config_dword(sdev->pci, offset, new);
+		dev_dbg(sdev->dev, "Debug PCIW: %8.8x at  %8.8x\n", value,
+			offset);
+	}
 
-	pci_write_config_dword(sdev->pci, offset, new);
-	dev_dbg(sdev->dev, "Debug PCIW: %8.8x at  %8.8x\n", value,
-		offset);
-
-	return true;
+	return change;
 }
 EXPORT_SYMBOL(snd_sof_pci_update_bits_unlocked);
 
@@ -51,6 +52,7 @@ EXPORT_SYMBOL(snd_sof_pci_update_bits);
 int snd_sof_dsp_update_bits_unlocked(struct snd_sof_dev *sdev, u32 bar,
 				     u32 offset, u32 mask, u32 value)
 {
+	bool change;
 	unsigned int old, new;
 	u32 ret;
 
@@ -59,30 +61,29 @@ int snd_sof_dsp_update_bits_unlocked(struct snd_sof_dev *sdev, u32 bar,
 	old = ret;
 	new = (old & (~mask)) | (value & mask);
 
-	if (old == new)
-		return false;
+	change = (old != new);
+	if (change)
+		snd_sof_dsp_write(sdev, bar, offset, new);
 
-	snd_sof_dsp_write(sdev, bar, offset, new);
-
-	return true;
+	return change;
 }
 EXPORT_SYMBOL(snd_sof_dsp_update_bits_unlocked);
 
 int snd_sof_dsp_update_bits64_unlocked(struct snd_sof_dev *sdev, u32 bar,
 				       u32 offset, u64 mask, u64 value)
 {
+	bool change;
 	u64 old, new;
 
 	old = snd_sof_dsp_read64(sdev, bar, offset);
 
 	new = (old & (~mask)) | (value & mask);
 
-	if (old == new)
-		return false;
+	change = (old != new);
+	if (change)
+		snd_sof_dsp_write64(sdev, bar, offset, new);
 
-	snd_sof_dsp_write64(sdev, bar, offset, new);
-
-	return true;
+	return change;
 }
 EXPORT_SYMBOL(snd_sof_dsp_update_bits64_unlocked);
 
