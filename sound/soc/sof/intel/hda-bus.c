@@ -86,22 +86,20 @@ void sof_hda_bus_init(struct hdac_bus *bus, struct device *dev,
 
 	bus->io_ops = &io_ops;
 	INIT_LIST_HEAD(&bus->stream_list);
-
-	bus->irq = -1;
-	bus->ext_ops = ext_ops;
-	bus->idx = idx++;
-
-	spin_lock_init(&bus->reg_lock);
+	INIT_LIST_HEAD(&bus->codec_list);
 
 #if IS_ENABLED(CONFIG_SND_SOC_SOF_HDA)
-	INIT_LIST_HEAD(&bus->codec_list);
-	INIT_LIST_HEAD(&bus->hlink_list);
-
-	mutex_init(&bus->cmd_mutex);
-	mutex_init(&bus->lock);
 	bus->ops = &bus_ops;
 	INIT_WORK(&bus->unsol_work, snd_hdac_bus_process_unsol_events);
-	bus->cmd_dma_state = true;
 #endif
+	spin_lock_init(&bus->reg_lock);
+	mutex_init(&bus->cmd_mutex);
+	bus->irq = -1;
 
+	bus->ext_ops = ext_ops;
+	INIT_LIST_HEAD(&bus->hlink_list);
+	bus->idx = idx++;
+
+	mutex_init(&bus->lock);
+	bus->cmd_dma_state = true;
 }
