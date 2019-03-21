@@ -21,6 +21,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/debugfs.h>
 #include <linux/uaccess.h>
+#include <uapi/sound/sof-ipc.h>
 #include "sof-priv.h"
 #include "ops.h"
 

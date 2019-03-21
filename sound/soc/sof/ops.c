@@ -14,6 +14,7 @@
 #include <linux/device.h>
 #include <linux/pci.h>
 #include <linux/delay.h>
+#include <uapi/sound/sof-ipc.h>
 #include "ops.h"
 #include "sof-priv.h"
 

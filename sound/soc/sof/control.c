@@ -17,6 +17,7 @@
 #include <sound/soc-topology.h>
 #include <sound/soc.h>
 #include <sound/control.h>
+#include <uapi/sound/sof-ipc.h>
 #include "sof-priv.h"
 
 static inline u32 mixer_to_ipc(unsigned int value, u32 *volume_map, int size)
@@ -326,6 +327,7 @@ int snd_sof_bytes_ext_put(struct snd_kcontrol *kcontrol,
 	/* set the ABI header values */
 	cdata->data->magic = SOF_ABI_MAGIC;
 	cdata->data->abi = SOF_ABI_VERSION;
+	cdata->data->comp_abi = SOF_ABI_VERSION;
 
 	/* notify DSP of mixer updates */
 	snd_sof_ipc_set_comp_data(sdev->ipc, scontrol, SOF_IPC_COMP_SET_DATA,
@@ -384,6 +386,7 @@ int snd_sof_bytes_ext_get(struct snd_kcontrol *kcontrol,
 	/* set the ABI header values */
 	cdata->data->magic = SOF_ABI_MAGIC;
 	cdata->data->abi = SOF_ABI_VERSION;
+	cdata->data->comp_abi = SOF_ABI_VERSION;
 
 	/* get all the component data from DSP */
 	ret = snd_sof_ipc_get_comp_data(sdev->ipc, scontrol,

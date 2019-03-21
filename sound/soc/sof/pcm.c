@@ -25,6 +25,7 @@
 #include <sound/tlv.h>
 #include <sound/compress_driver.h>
 #include <sound/sof.h>
+#include <uapi/sound/sof-ipc.h>
 #include "sof-priv.h"
 #include "ops.h"
 

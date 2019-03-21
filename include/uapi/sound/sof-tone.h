@@ -1,13 +1,14 @@
 /* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
 /*
-* This file is provided under a dual BSD/GPLv2 license.  When using or
-* redistributing this file, you may do so under either license.
-*
-* Copyright(c) 2018 Intel Corporation. All rights reserved.
-*/
+ * This file is provided under a dual BSD/GPLv2 license.  When using or
+ * redistributing this file, you may do so under either license.
+ *
+ * Copyright(c) 2018 Intel Corporation. All rights reserved.
+ * Author: Seppo Ingalsuo <seppo.ingalsuo@linux.intel.com>
+ */
 
-#ifndef __INCLUDE_UAPI_SOUND_SOF_USER_TONE_H__
-#define __INCLUDE_UAPI_SOUND_SOF_USER_TONE_H__
+#ifndef TONE_H
+#define TONE_H
 
 #define SOF_TONE_IDX_FREQUENCY		0
 #define SOF_TONE_IDX_AMPLITUDE		1
@@ -18,4 +19,4 @@
 #define SOF_TONE_IDX_REPEATS		6
 #define SOF_TONE_IDX_LIN_RAMP_STEP	7
 
-#endif
+#endif /* TONE_ABI_H */
