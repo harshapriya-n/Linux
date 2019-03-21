@@ -21,14 +21,6 @@
 #include "intel/shim.h"
 #include "intel/hda.h"
 
-static char *fw_path;
-module_param(fw_path, charp, 0444);
-MODULE_PARM_DESC(fw_path, "alternate path for SOF firmware.");
-
-static char *tplg_path;
-module_param(tplg_path, charp, 0444);
-MODULE_PARM_DESC(tplg_path, "alternate path for SOF topology.");
-
 #if IS_ENABLED(CONFIG_SND_SOC_SOF_APOLLOLAKE)
 static const struct sof_dev_desc bxt_desc = {
 	.machines		= snd_soc_acpi_intel_bxt_machines,
@@ -38,10 +30,8 @@ static const struct sof_dev_desc bxt_desc = {
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
 	.chip_info = &apl_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-apl.ri",
-	.nocodec_tplg_filename = "sof-apl-nocodec.tplg",
+	.nocodec_fw_filename = "intel/sof-apl.ri",
+	.nocodec_tplg_filename = "intel/sof-apl-nocodec.tplg",
 	.ops = &sof_apl_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -56,10 +46,8 @@ static const struct sof_dev_desc glk_desc = {
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
 	.chip_info = &apl_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-glk.ri",
-	.nocodec_tplg_filename = "sof-glk-nocodec.tplg",
+	.nocodec_fw_filename = "intel/sof-glk.ri",
+	.nocodec_tplg_filename = "intel/sof-glk-nocodec.tplg",
 	.ops = &sof_apl_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -70,8 +58,8 @@ static struct snd_soc_acpi_mach sof_tng_machines[] = {
 	{
 		.id = "INT343A",
 		.drv_name = "edison",
-		.sof_fw_filename = "sof-byt.ri",
-		.sof_tplg_filename = "sof-byt.tplg",
+		.sof_fw_filename = "intel/sof-byt.ri",
+		.sof_tplg_filename = "intel/sof-byt.tplg",
 		.asoc_plat_name = "baytrail-pcm-audio",
 	},
 	{}
@@ -85,10 +73,8 @@ static const struct sof_dev_desc tng_desc = {
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
 	.chip_info = &tng_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-byt.ri",
-	.nocodec_tplg_filename = "sof-byt.tplg",
+	.nocodec_fw_filename = "intel/sof-byt.ri",
+	.nocodec_tplg_filename = "intel/sof-byt.tplg",
 	.ops = &sof_tng_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -103,10 +89,8 @@ static const struct sof_dev_desc cnl_desc = {
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
 	.chip_info = &cnl_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-cnl.ri",
-	.nocodec_tplg_filename = "sof-cnl-nocodec.tplg",
+	.nocodec_fw_filename = "intel/sof-cnl.ri",
+	.nocodec_tplg_filename = "intel/sof-cnl-nocodec.tplg",
 	.ops = &sof_cnl_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -121,10 +105,8 @@ static const struct sof_dev_desc icl_desc = {
 	.irqindex_host_ipc      = -1,
 	.resindex_dma_base      = -1,
 	.chip_info = &cnl_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-icl.ri",
-	.nocodec_tplg_filename = "sof-icl-nocodec.tplg",
+	.nocodec_fw_filename = "intel/sof-icl.ri",
+	.nocodec_tplg_filename = "intel/sof-icl-nocodec.tplg",
 	.ops = &sof_cnl_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -139,10 +121,8 @@ static const struct sof_dev_desc skl_desc = {
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
 	.chip_info = &skl_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-skl.ri",
-	.nocodec_tplg_filename = "sof-skl-nocodec.tplg",
+	.nocodec_fw_filename = "intel/sof-skl.ri",
+	.nocodec_tplg_filename = "intel/sof-skl-nocodec.tplg",
 	.ops = &sof_skl_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -157,10 +137,8 @@ static const struct sof_dev_desc kbl_desc = {
 	.irqindex_host_ipc	= -1,
 	.resindex_dma_base	= -1,
 	.chip_info = &skl_chip_info,
-	.default_fw_path = "intel/sof",
-	.default_tplg_path = "intel/sof-tplg",
-	.nocodec_fw_filename = "sof-kbl.ri",
-	.nocodec_tplg_filename = "sof-kbl-nocodec.tplg",
+	.nocodec_fw_filename = "intel/sof-kbl.ri",
+	.nocodec_tplg_filename = "intel/sof-kbl-nocodec.tplg",
 	.ops = &sof_skl_ops,
 	.arch_ops = &sof_xtensa_arch_ops
 };
@@ -247,24 +225,6 @@ static int sof_pci_probe(struct pci_dev *pci,
 	sof_pdata->desc = (struct sof_dev_desc *)pci_id->driver_data;
 	sof_pdata->dev = dev;
 	sof_pdata->platform = dev_name(dev);
-
-	/* alternate fw and tplg filenames ? */
-	if (fw_path)
-		sof_pdata->fw_filename_prefix = fw_path;
-	else
-		sof_pdata->fw_filename_prefix =
-			sof_pdata->desc->default_fw_path;
-
-	if (tplg_path)
-		sof_pdata->tplg_filename_prefix = tplg_path;
-	else
-		sof_pdata->tplg_filename_prefix =
-			sof_pdata->desc->default_tplg_path;
-
-	if (mach) {
-		sof_pdata->fw_filename = mach->sof_fw_filename;
-		sof_pdata->tplg_filename = mach->sof_tplg_filename;
-	}
 
 #if IS_ENABLED(CONFIG_SND_SOC_SOF_PROBE_WORK_QUEUE)
 	/* set callback to enable runtime_pm */

@@ -227,19 +227,20 @@ static int hda_init(struct snd_sof_dev *sdev)
 static const char *fixup_tplg_name(struct snd_sof_dev *sdev,
 				   const char *sof_tplg_filename)
 {
-	const char *tplg_filename = NULL;
 	char *filename;
-	char *split_ext;
+	const char *tplg_filename = NULL;
+	int length;
 
 	filename = devm_kstrdup(sdev->dev, sof_tplg_filename, GFP_KERNEL);
 	if (!filename)
 		return NULL;
 
 	/* this assumes a .tplg extension */
-	split_ext = strsep(&filename, ".");
-	if (split_ext) {
+	length = strlen(filename);
+	if (length >= 6) {
+		filename[length - 5] = '\0';
 		tplg_filename = devm_kasprintf(sdev->dev, GFP_KERNEL,
-					       "%s-idisp.tplg", split_ext);
+					       "%s-idisp.tplg", filename);
 		if (!tplg_filename)
 			return NULL;
 	}
@@ -254,7 +255,7 @@ static int hda_init_caps(struct snd_sof_dev *sdev)
 	struct snd_soc_acpi_mach *hda_mach = NULL;
 	struct snd_sof_pdata *pdata = sdev->pdata;
 	struct snd_soc_acpi_mach *mach;
-	const char *tplg_filename;
+	char *tplg_filename;
 	int codec_num = 0;
 	int ret = 0;
 	int i;
@@ -309,15 +310,10 @@ static int hda_init_caps(struct snd_sof_dev *sdev)
 			if (codec_num == 2 ||
 			    !IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)) {
 				hda_mach = snd_soc_acpi_intel_hda_machines;
-				pdata->machine = hda_mach;
-
-				/* topology: use the info from hda_machines */
-				pdata->tplg_filename =
-					hda_mach->sof_tplg_filename;
-
-				/* firmware: pick the first in machine list */
 				mach = pdata->desc->machines;
-				pdata->fw_filename = mach->sof_fw_filename;
+				hda_mach->sof_fw_filename =
+					mach->sof_fw_filename;
+				pdata->machine = hda_mach;
 
 				dev_info(bus->dev, "using HDA machine driver %s now\n",
 					 hda_mach->drv_name);
@@ -327,11 +323,11 @@ static int hda_init_caps(struct snd_sof_dev *sdev)
 			if (codec_num == 1 &&
 			    !IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)) {
 				/* use local variable for readability */
-				tplg_filename = pdata->tplg_filename;
+				tplg_filename = hda_mach->sof_tplg_filename;
 				tplg_filename = fixup_tplg_name(sdev, tplg_filename);
 				if (!tplg_filename)
 					goto out;
-				pdata->tplg_filename = tplg_filename;
+				hda_mach->sof_tplg_filename = tplg_filename;
 			}
 		}
 	}
