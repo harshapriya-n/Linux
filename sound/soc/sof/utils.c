@@ -18,6 +18,7 @@ int sof_bes_setup(struct device *dev, const struct snd_sof_dsp_ops *ops,
 		  struct snd_soc_dai_link *links, int link_num,
 		  struct snd_soc_card *card)
 {
+	char name[32];
 	int i;
 
 	if (!ops || !links || !card)
@@ -25,8 +26,8 @@ int sof_bes_setup(struct device *dev, const struct snd_sof_dsp_ops *ops,
 
 	/* set up BE dai_links */
 	for (i = 0; i < link_num; i++) {
-		links[i].name = devm_kasprintf(dev, GFP_KERNEL,
-					       "NoCodec-%d", i);
+		snprintf(name, 32, "NoCodec-%d", i);
+		links[i].name = devm_kstrdup(dev, name, GFP_KERNEL);
 		if (!links[i].name)
 			return -ENOMEM;
 
