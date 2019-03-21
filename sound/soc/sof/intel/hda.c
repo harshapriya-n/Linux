@@ -43,6 +43,72 @@
 #include "shim.h"
 
 /*
+ * Register IO
+ */
+
+void hda_dsp_write(struct snd_sof_dev *sdev, void __iomem *addr, u32 value)
+{
+	writel(value, addr);
+}
+
+u32 hda_dsp_read(struct snd_sof_dev *sdev, void __iomem *addr)
+{
+	return readl(addr);
+}
+
+void hda_dsp_write64(struct snd_sof_dev *sdev, void __iomem *addr, u64 value)
+{
+	writeq(value, addr);
+}
+
+u64 hda_dsp_read64(struct snd_sof_dev *sdev, void __iomem *addr)
+{
+	return readq(addr);
+}
+
+/*
+ * Memory copy.
+ */
+
+void hda_dsp_block_write(struct snd_sof_dev *sdev, u32 offset, void *src,
+			 size_t size)
+{
+	void __iomem *dest = sdev->bar[sdev->mmio_bar] + offset;
+	u32 tmp = 0;
+	int i, m, n;
+	const u8 *src_byte = src;
+	u8 *dst_byte;
+
+	m = size / 4;
+	n = size % 4;
+
+	/* __iowrite32_copy use 32bit size values so divide by 4 */
+	__iowrite32_copy(dest, src, m);
+
+	if (n) {
+		/* first read the 32bit data of dest, then change affected
+		 * bytes, and write back to dest. For unaffected bytes, it
+		 * should not be changed
+		 */
+		__ioread32_copy(&tmp, dest + m * 4, 1);
+
+		dst_byte = (u8 *)&tmp;
+		for (i = 0; i < n; i++)
+			dst_byte[i] = src_byte[m * 4 + i];
+
+		__iowrite32_copy(dest + m * 4, &tmp, 1);
+	}
+}
+
+void hda_dsp_block_read(struct snd_sof_dev *sdev, u32 offset, void *dest,
+			size_t size)
+{
+	void __iomem *src = sdev->bar[sdev->mmio_bar] + offset;
+
+	memcpy_fromio(dest, src, size);
+}
+
+/*
  * Debug
  */
 
@@ -119,16 +185,16 @@ static void hda_dsp_get_registers(struct snd_sof_dev *sdev,
 				  u32 *stack, size_t stack_words)
 {
 	/* first read registers */
-	sof_block_read(sdev, sdev->dsp_oops_offset, xoops, sizeof(*xoops));
+	hda_dsp_block_read(sdev, sdev->dsp_oops_offset, xoops, sizeof(*xoops));
 
 	/* then get panic info */
-	sof_block_read(sdev, sdev->dsp_oops_offset + sizeof(*xoops),
-		       panic_info, sizeof(*panic_info));
+	hda_dsp_block_read(sdev, sdev->dsp_oops_offset + sizeof(*xoops),
+			   panic_info, sizeof(*panic_info));
 
 	/* then get the stack */
-	sof_block_read(sdev, sdev->dsp_oops_offset + sizeof(*xoops) +
-		       sizeof(*panic_info), stack,
-		       stack_words * sizeof(u32));
+	hda_dsp_block_read(sdev, sdev->dsp_oops_offset + sizeof(*xoops) +
+			   sizeof(*panic_info), stack,
+			   stack_words * sizeof(u32));
 }
 
 void hda_dsp_dump_skl(struct snd_sof_dev *sdev, u32 flags)
@@ -186,6 +252,26 @@ void hda_dsp_dump(struct snd_sof_dev *sdev, u32 flags)
 			status, panic);
 		hda_dsp_get_status(sdev);
 	}
+}
+
+/*
+ * IPC Mailbox IO
+ */
+
+void hda_dsp_mailbox_write(struct snd_sof_dev *sdev, u32 offset,
+			   void *message, size_t bytes)
+{
+	void __iomem *dest = sdev->bar[sdev->mailbox_bar] + offset;
+
+	memcpy_toio(dest, message, bytes);
+}
+
+void hda_dsp_mailbox_read(struct snd_sof_dev *sdev, u32 offset,
+			  void *message, size_t bytes)
+{
+	void __iomem *src = sdev->bar[sdev->mailbox_bar] + offset;
+
+	memcpy_fromio(message, src, bytes);
 }
 
 /*

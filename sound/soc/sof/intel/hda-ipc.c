@@ -88,8 +88,8 @@ int hda_dsp_ipc_send_msg(struct snd_sof_dev *sdev, struct snd_sof_ipc_msg *msg)
 	u32 cmd = msg->header;
 
 	/* send IPC message to DSP */
-	sof_mailbox_write(sdev, sdev->host_box.offset, msg->msg_data,
-			  msg->msg_size);
+	hda_dsp_mailbox_write(sdev, sdev->host_box.offset, msg->msg_data,
+			      msg->msg_size);
 	snd_sof_dsp_write(sdev, HDA_DSP_BAR, HDA_DSP_REG_HIPCI,
 			  cmd | HDA_DSP_REG_HIPCI_BUSY);
 
@@ -104,7 +104,8 @@ int hda_dsp_ipc_get_reply(struct snd_sof_dev *sdev,
 	u32 size;
 
 	/* get IPC reply from DSP in the mailbox */
-	sof_mailbox_read(sdev, sdev->host_box.offset, &reply, sizeof(reply));
+	hda_dsp_mailbox_read(sdev, sdev->host_box.offset, &reply,
+			     sizeof(reply));
 	if (reply.error < 0) {
 		size = sizeof(reply);
 		ret = reply.error;
@@ -122,8 +123,8 @@ int hda_dsp_ipc_get_reply(struct snd_sof_dev *sdev,
 
 	/* read the message */
 	if (msg->msg_data && size > 0)
-		sof_mailbox_read(sdev, sdev->host_box.offset,
-				 msg->reply_data, size);
+		hda_dsp_mailbox_read(sdev, sdev->host_box.offset,
+				     msg->reply_data, size);
 
 	return ret;
 }
@@ -380,7 +381,7 @@ int hda_dsp_ipc_fw_ready(struct snd_sof_dev *sdev, u32 msg_id)
 		msg_id, offset);
 
 	/* copy data from the DSP FW ready offset */
-	sof_block_read(sdev, offset, fw_ready,	sizeof(*fw_ready));
+	hda_dsp_block_read(sdev, offset, fw_ready,	sizeof(*fw_ready));
 	dev_info(sdev->dev,
 		 " Firmware info: version %d.%d-%s build %d on %s:%s\n",
 		 v->major, v->minor, v->tag, v->build, v->date, v->time);
