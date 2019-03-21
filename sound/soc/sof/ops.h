@@ -27,8 +27,7 @@ static inline int snd_sof_probe(struct snd_sof_dev *sdev)
 	if (sof_ops(sdev)->probe)
 		return sof_ops(sdev)->probe(sdev);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 static inline int snd_sof_remove(struct snd_sof_dev *sdev)
@@ -45,8 +44,7 @@ static inline int snd_sof_dsp_run(struct snd_sof_dev *sdev)
 	if (sof_ops(sdev)->run)
 		return sof_ops(sdev)->run(sdev);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 static inline int snd_sof_dsp_stall(struct snd_sof_dev *sdev)
@@ -135,23 +133,15 @@ static inline void snd_sof_dsp_dbg_dump(struct snd_sof_dev *sdev, u32 flags)
 static inline void snd_sof_dsp_write(struct snd_sof_dev *sdev, u32 bar,
 				     u32 offset, u32 value)
 {
-	if (sof_ops(sdev)->write) {
+	if (sof_ops(sdev)->write)
 		sof_ops(sdev)->write(sdev, sdev->bar[bar] + offset, value);
-		return;
-	}
-
-	dev_err_ratelimited(sdev->dev, "error: %s not defined\n", __func__);
 }
 
 static inline void snd_sof_dsp_write64(struct snd_sof_dev *sdev, u32 bar,
 				       u32 offset, u64 value)
 {
-	if (sof_ops(sdev)->write64) {
+	if (sof_ops(sdev)->write64)
 		sof_ops(sdev)->write64(sdev, sdev->bar[bar] + offset, value);
-		return;
-	}
-
-	dev_err_ratelimited(sdev->dev, "error: %s not defined\n", __func__);
 }
 
 static inline u32 snd_sof_dsp_read(struct snd_sof_dev *sdev, u32 bar,
@@ -160,8 +150,7 @@ static inline u32 snd_sof_dsp_read(struct snd_sof_dev *sdev, u32 bar,
 	if (sof_ops(sdev)->read)
 		return sof_ops(sdev)->read(sdev, sdev->bar[bar] + offset);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 static inline u64 snd_sof_dsp_read64(struct snd_sof_dev *sdev, u32 bar,
@@ -170,31 +159,22 @@ static inline u64 snd_sof_dsp_read64(struct snd_sof_dev *sdev, u32 bar,
 	if (sof_ops(sdev)->read64)
 		return sof_ops(sdev)->read64(sdev, sdev->bar[bar] + offset);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 /* block IO */
 static inline void snd_sof_dsp_block_read(struct snd_sof_dev *sdev, u32 bar,
 					  u32 offset, void *dest, size_t bytes)
 {
-	if (sof_ops(sdev)->block_read) {
+	if (sof_ops(sdev)->block_read)
 		sof_ops(sdev)->block_read(sdev, bar, offset, dest, bytes);
-		return;
-	}
-
-	dev_err_ratelimited(sdev->dev, "error: %s not defined\n", __func__);
 }
 
 static inline void snd_sof_dsp_block_write(struct snd_sof_dev *sdev, u32 bar,
 					   u32 offset, void *src, size_t bytes)
 {
-	if (sof_ops(sdev)->block_write) {
+	if (sof_ops(sdev)->block_write)
 		sof_ops(sdev)->block_write(sdev, bar, offset, src, bytes);
-		return;
-	}
-
-	dev_err_ratelimited(sdev->dev, "error: %s not defined\n", __func__);
 }
 
 /* mailbox */
@@ -202,24 +182,16 @@ static inline void snd_sof_dsp_mailbox_read(struct snd_sof_dev *sdev,
 					    u32 offset, void *message,
 					    size_t bytes)
 {
-	if (sof_ops(sdev)->mailbox_read) {
+	if (sof_ops(sdev)->mailbox_read)
 		sof_ops(sdev)->mailbox_read(sdev, offset, message, bytes);
-		return;
-	}
-
-	dev_err_ratelimited(sdev->dev, "error: %s not defined\n", __func__);
 }
 
 static inline void snd_sof_dsp_mailbox_write(struct snd_sof_dev *sdev,
 					     u32 offset, void *message,
 					     size_t bytes)
 {
-	if (sof_ops(sdev)->mailbox_write) {
+	if (sof_ops(sdev)->mailbox_write)
 		sof_ops(sdev)->mailbox_write(sdev, offset, message, bytes);
-		return;
-	}
-
-	dev_err_ratelimited(sdev->dev, "error: %s not defined\n", __func__);
 }
 
 /* ipc */
@@ -229,8 +201,7 @@ static inline int snd_sof_dsp_send_msg(struct snd_sof_dev *sdev,
 	if (sof_ops(sdev)->send_msg)
 		return sof_ops(sdev)->send_msg(sdev, msg);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 static inline int snd_sof_dsp_get_reply(struct snd_sof_dev *sdev,
@@ -239,8 +210,7 @@ static inline int snd_sof_dsp_get_reply(struct snd_sof_dev *sdev,
 	if (sof_ops(sdev)->get_reply)
 		return sof_ops(sdev)->get_reply(sdev, msg);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 static inline int snd_sof_dsp_is_ipc_ready(struct snd_sof_dev *sdev)
@@ -248,8 +218,7 @@ static inline int snd_sof_dsp_is_ipc_ready(struct snd_sof_dev *sdev)
 	if (sof_ops(sdev)->is_ipc_ready)
 		return sof_ops(sdev)->is_ipc_ready(sdev);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 static inline int snd_sof_dsp_cmd_done(struct snd_sof_dev *sdev,
@@ -258,8 +227,7 @@ static inline int snd_sof_dsp_cmd_done(struct snd_sof_dev *sdev,
 	if (sof_ops(sdev)->cmd_done)
 		return sof_ops(sdev)->cmd_done(sdev, dir);
 
-	dev_err(sdev->dev, "error: %s not defined\n", __func__);
-	return -ENOTSUPP;
+	return 0;
 }
 
 /* host DMA trace */
