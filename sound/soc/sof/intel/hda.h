@@ -363,9 +363,6 @@ struct sof_intel_hda_dev {
 	bool no_ipc_position;
 
 	int irq;
-
-	/* DMIC device */
-	struct platform_device *dmic_dev;
 };
 
 #define bus_to_sof_hda(bus) \
