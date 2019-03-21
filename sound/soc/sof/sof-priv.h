@@ -197,21 +197,19 @@ struct sof_ops_table {
 	const struct snd_sof_dsp_ops *ops;
 };
 
-enum sof_dfsentry_type {
-	SOF_DFSENTRY_TYPE_IOMEM = 0,
-	SOF_DFSENTRY_TYPE_BUF,
-};
-
 /* FS entry for debug files that can expose DSP memories, registers */
-struct snd_sof_dfsentry {
+struct snd_sof_dfsentry_io {
 	struct dentry *dfsentry;
 	size_t size;
-	enum sof_dfsentry_type type;
+	void __iomem *buf;
 	struct snd_sof_dev *sdev;
-	union {
-		void __iomem *io_mem;
-		void *buf;
-	};
+};
+
+struct snd_sof_dfsentry_buf {
+	struct dentry *dfsentry;
+	size_t size;
+	void *buf;
+	struct snd_sof_dev *sdev;
 };
 
 /* Debug mapping for any DSP memory or registers that can used for debug */
