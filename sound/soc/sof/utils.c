@@ -8,6 +8,7 @@
 // Author: Keyon Jie <yang.jie@linux.intel.com>
 //
 
+#include <linux/device.h>
 #include <linux/io.h>
 #include <linux/platform_device.h>
 #include <sound/soc.h>
