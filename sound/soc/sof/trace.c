@@ -35,11 +35,13 @@ static size_t sof_wait_trace_avail(struct snd_sof_dev *sdev,
 	set_current_state(TASK_INTERRUPTIBLE);
 	add_wait_queue(&sdev->trace_sleep, &wait);
 
-	if (!signal_pending(current)) {
+	if (signal_pending(current)) {
+		remove_wait_queue(&sdev->trace_sleep, &wait);
+	} else {
 		/* set timeout to max value, no error code */
 		schedule_timeout(MAX_SCHEDULE_TIMEOUT);
+		remove_wait_queue(&sdev->trace_sleep, &wait);
 	}
-	remove_wait_queue(&sdev->trace_sleep, &wait);
 
 	/* return bytes available for copy */
 	if (sdev->host_offset < pos)
