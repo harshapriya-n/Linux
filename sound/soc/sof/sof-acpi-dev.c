@@ -116,6 +116,22 @@ static struct sof_dev_desc sof_acpi_cherrytrail_desc = {
 	.nocodec_tplg_filename = "intel/sof-cht-nocodec.tplg"
 };
 
+static struct platform_device *
+	mfld_new_mach_data(struct snd_sof_pdata *sof_pdata)
+{
+	struct snd_soc_acpi_mach pmach;
+	struct device *dev = sof_pdata->dev;
+	const struct snd_soc_acpi_mach *mach = sof_pdata->machine;
+	struct platform_device *pdev = NULL;
+
+	memset(&pmach, 0, sizeof(pmach));
+	memcpy((void *)pmach.id, mach->id, ACPI_ID_LEN);
+	pmach.drv_name = mach->drv_name;
+
+	pdev = platform_device_register_data(dev, mach->drv_name, -1,
+					     &pmach, sizeof(pmach));
+	return pdev;
+}
 #endif
 
 static const struct dev_pm_ops sof_acpi_pm = {
@@ -133,18 +149,22 @@ static const struct sof_ops_table mach_ops[] = {
 	{&sof_acpi_broadwell_desc, &sof_bdw_ops},
 #endif
 #if IS_ENABLED(CONFIG_SND_SOC_SOF_BAYTRAIL)
-	{&sof_acpi_baytrail_desc, &sof_byt_ops},
-	{&sof_acpi_baytrailcr_desc, &sof_byt_ops},
-	{&sof_acpi_cherrytrail_desc, &sof_cht_ops},
+	{&sof_acpi_baytrail_desc, &sof_byt_ops, mfld_new_mach_data},
+	{&sof_acpi_baytrailcr_desc, &sof_byt_ops, mfld_new_mach_data},
+	{&sof_acpi_cherrytrail_desc, &sof_cht_ops, mfld_new_mach_data},
 #endif
 };
 
-static struct snd_sof_dsp_ops *sof_acpi_get_ops(const struct sof_dev_desc *d)
+static struct snd_sof_dsp_ops *
+	sof_acpi_get_ops(const struct sof_dev_desc *d,
+			 struct platform_device *(**new_mach_data)
+			 (struct snd_sof_pdata *))
 {
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(mach_ops); i++) {
 		if (d == mach_ops[i].desc) {
+			*new_mach_data = mach_ops[i].new_data;
 			return mach_ops[i].ops;
 		}
 	}
@@ -162,6 +182,7 @@ static int sof_acpi_probe(struct platform_device *pdev)
 	struct snd_sof_pdata *sof_pdata;
 	struct sof_platform_priv *priv;
 	struct snd_sof_dsp_ops *ops;
+	struct platform_device *(*new_mach_data)(struct snd_sof_pdata *pdata);
 	int ret = 0;
 
 	dev_dbg(&pdev->dev, "ACPI DSP detected");
@@ -185,7 +206,8 @@ static int sof_acpi_probe(struct platform_device *pdev)
 #endif
 
 	/* get ops for platform */
-	ops = sof_acpi_get_ops(desc);
+	new_mach_data = NULL;
+	ops = sof_acpi_get_ops(desc, &new_mach_data);
 	if (!ops) {
 		dev_err(dev, "error: no matching ACPI descriptor ops\n");
 		return -ENODEV;
@@ -210,13 +232,17 @@ static int sof_acpi_probe(struct platform_device *pdev)
 		if (ret < 0)
 			return ret;
 #else
-		dev_err(dev, "No matching ASoC machine driver found - aborting probe\n");
-		return -ENODEV;
+		dev_warn(dev, "No matching ASoC machine driver found - falling back to HDA codec\n");
+		mach = snd_soc_acpi_intel_hda_machines;
+		mach->sof_fw_filename = desc->nocodec_fw_filename;
 #endif
 	}
 #endif
 
 	mach->pdata = ops;
+	mach->new_mach_data = (struct platform_device *
+				(*)(void *pdata)) new_mach_data;
+
 	sof_pdata->machine = mach;
 	/*
 	 * FIXME, this can't work for baytrail cr:
