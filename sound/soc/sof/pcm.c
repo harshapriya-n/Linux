@@ -703,7 +703,7 @@ static int sof_pcm_probe(struct snd_soc_component *component)
 
 	/* enable runtime PM with auto suspend */
 	pm_runtime_set_autosuspend_delay(component->dev,
-					 SND_SOF_SUSPEND_DELAY_MS);
+					 SND_SOF_SUSPEND_DELAY);
 	pm_runtime_use_autosuspend(component->dev);
 	pm_runtime_enable(component->dev);
 
