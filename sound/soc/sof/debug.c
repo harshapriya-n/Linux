@@ -98,7 +98,7 @@ int snd_sof_debugfs_create_item(struct snd_sof_dev *sdev,
 	if (!sdev)
 		return -EINVAL;
 
-	dfse = devm_kzalloc(sdev->dev, sizeof(*dfse), GFP_KERNEL);
+	dfse = kzalloc(sizeof(*dfse), GFP_KERNEL);
 	if (!dfse)
 		return -ENOMEM;
 
@@ -110,6 +110,7 @@ int snd_sof_debugfs_create_item(struct snd_sof_dev *sdev,
 					     dfse, &sof_dfs_fops);
 	if (!dfse->dfsentry) {
 		dev_err(sdev->dev, "cannot create debugfs entry.\n");
+		kfree(dfse);
 		return -ENODEV;
 	}
 
