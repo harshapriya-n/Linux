@@ -270,7 +270,7 @@ int sof_ipc_tx_message(struct snd_sof_ipc *ipc, u32 header,
 
 	/* schedule the message if not busy */
 	if (snd_sof_dsp_is_ready(sdev))
-		snd_sof_ipc_msgs_tx(sdev);
+		schedule_work(&ipc->tx_kwork);
 
 	spin_unlock_irq(&sdev->ipc_lock);
 
@@ -439,16 +439,14 @@ static void ipc_msgs_rx(struct work_struct *work)
 /* schedule work to transmit any IPC in queue */
 void snd_sof_ipc_msgs_tx(struct snd_sof_dev *sdev)
 {
-	if (!sdev->disable_ipc_queue)
-		schedule_work(&sdev->ipc->tx_kwork);
+	schedule_work(&sdev->ipc->tx_kwork);
 }
 EXPORT_SYMBOL(snd_sof_ipc_msgs_tx);
 
 /* schedule work to handle IPC from DSP */
 void snd_sof_ipc_msgs_rx(struct snd_sof_dev *sdev)
 {
-	if (!sdev->disable_ipc_queue)
-		schedule_work(&sdev->ipc->rx_kwork);
+	schedule_work(&sdev->ipc->rx_kwork);
 }
 EXPORT_SYMBOL(snd_sof_ipc_msgs_rx);
 
@@ -813,9 +811,6 @@ EXPORT_SYMBOL(snd_sof_ipc_init);
 
 void snd_sof_ipc_free(struct snd_sof_dev *sdev)
 {
-	/* disable queueing of ipc's */
-	sdev->disable_ipc_queue = true;
-
 	cancel_work_sync(&sdev->ipc->tx_kwork);
 	cancel_work_sync(&sdev->ipc->rx_kwork);
 }
