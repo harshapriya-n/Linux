@@ -8,7 +8,6 @@
 // Author: Pan Xiuli <xiuli.pan@linux.intel.com>
 //
 
-#include <linux/module.h>
 #include <sound/sof.h>
 #include <sound/sof/xtensa.h>
 #include "../sof-priv.h"
