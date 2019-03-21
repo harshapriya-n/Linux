@@ -170,8 +170,6 @@ hda_dsp_stream_get(struct snd_sof_dev *sdev, int direction)
 	struct hdac_ext_stream *stream = NULL;
 	struct hdac_stream *s;
 
-	spin_lock_irq(&bus->reg_lock);
-
 	/* get an unused stream */
 	list_for_each_entry(s, &bus->stream_list, list) {
 		if (s->direction == direction && !s->opened) {
@@ -180,8 +178,6 @@ hda_dsp_stream_get(struct snd_sof_dev *sdev, int direction)
 			break;
 		}
 	}
-
-	spin_unlock_irq(&bus->reg_lock);
 
 	/* stream found ? */
 	if (!stream)
@@ -198,19 +194,14 @@ int hda_dsp_stream_put(struct snd_sof_dev *sdev, int direction, int tag)
 	struct hdac_bus *bus = sof_to_bus(sdev);
 	struct hdac_stream *s;
 
-	spin_lock_irq(&bus->reg_lock);
-
 	/* find used stream */
 	list_for_each_entry(s, &bus->stream_list, list) {
 		if (s->direction == direction &&
 		    s->opened && s->stream_tag == tag) {
 			s->opened = false;
-			spin_unlock_irq(&bus->reg_lock);
 			return 0;
 		}
 	}
-
-	spin_unlock_irq(&bus->reg_lock);
 
 	dev_dbg(sdev->dev, "tag %d not opened!\n", tag);
 	return -ENODEV;
