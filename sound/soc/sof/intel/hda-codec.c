@@ -112,8 +112,6 @@ int hda_codec_probe_bus(struct snd_sof_dev *sdev)
 }
 EXPORT_SYMBOL(hda_codec_probe_bus);
 
-#if IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)
-
 int hda_codec_i915_get(struct snd_sof_dev *sdev)
 {
 	struct hdac_bus *bus = sof_to_bus(sdev);
@@ -174,7 +172,5 @@ int hda_codec_i915_exit(struct snd_sof_dev *sdev)
 	return ret;
 }
 EXPORT_SYMBOL(hda_codec_i915_exit);
-
-#endif /* CONFIG_SND_SOC_HDAC_HDMI */
 
 MODULE_LICENSE("Dual BSD/GPL");
