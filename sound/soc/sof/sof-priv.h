@@ -118,7 +118,7 @@ struct snd_sof_dsp_ops {
 			struct snd_sof_ipc_msg *msg);
 	int (*get_reply)(struct snd_sof_dev *sof_dev,
 			 struct snd_sof_ipc_msg *msg);
-	int (*is_ipc_ready)(struct snd_sof_dev *sof_dev);
+	int (*is_ready)(struct snd_sof_dev *sof_dev);
 	int (*cmd_done)(struct snd_sof_dev *sof_dev, int dir);
 
 	/* debug */
