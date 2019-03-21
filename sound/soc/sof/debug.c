@@ -16,6 +16,13 @@
 #include <linux/pm_runtime.h>
 #include "sof-priv.h"
 
+static int sof_dfsentry_open(struct inode *inode, struct file *file)
+{
+	file->private_data = inode->i_private;
+
+	return 0;
+}
+
 static ssize_t sof_dfsentry_read(struct file *file, char __user *buffer,
 				 size_t count, loff_t *ppos)
 {
@@ -72,7 +79,7 @@ static ssize_t sof_dfsentry_read(struct file *file, char __user *buffer,
 }
 
 static const struct file_operations sof_dfs_fops = {
-	.open = simple_open,
+	.open = sof_dfsentry_open,
 	.read = sof_dfsentry_read,
 	.llseek = default_llseek,
 };
