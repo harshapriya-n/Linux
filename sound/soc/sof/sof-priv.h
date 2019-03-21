@@ -218,9 +218,7 @@ struct snd_sof_dfsentry {
 	 * or if it is accessible only when the DSP is in D0.
 	 */
 	enum sof_debugfs_access_type access_type;
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_DEBUG_ENABLE_DEBUGFS_CACHE)
-	char *cache_buf; /* buffer to cache the contents of debugfs memory */
-#endif
+	char *cache_buf; /* buffer to cache the contents of memory windows */
 	struct snd_sof_dev *sdev;
 	struct list_head list;  /* list in sdev dfsentry list */
 	union {
