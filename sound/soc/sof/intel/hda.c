@@ -25,7 +25,6 @@
 #include <linux/pm_runtime.h>
 #include <linux/pci.h>
 #include <linux/slab.h>
-#include <linux/io.h>
 #include <sound/hdaudio_ext.h>
 #include <sound/hdaudio.h>
 #include <sound/hda_i915.h>
@@ -58,12 +57,15 @@ u32 hda_dsp_read(struct snd_sof_dev *sdev, void __iomem *addr)
 
 void hda_dsp_write64(struct snd_sof_dev *sdev, void __iomem *addr, u64 value)
 {
-	writeq(value, addr);
+	memcpy_toio(addr, &value, sizeof(value));
 }
 
 u64 hda_dsp_read64(struct snd_sof_dev *sdev, void __iomem *addr)
 {
-	return readq(addr);
+	u64 val;
+
+	memcpy_fromio(&val, addr, sizeof(val));
+	return val;
 }
 
 /*
