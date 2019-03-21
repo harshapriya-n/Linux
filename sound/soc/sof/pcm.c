@@ -371,7 +371,6 @@ static int sof_pcm_open(struct snd_pcm_substream *substream)
 	struct snd_soc_tplg_stream_caps *caps =
 		&spcm->pcm.caps[substream->stream];
 	int ret;
-	int err;
 
 	/* nothing todo for BE */
 	if (rtd->dai_link->no_pcm)
@@ -428,21 +427,10 @@ static int sof_pcm_open(struct snd_pcm_substream *substream)
 	spcm->stream[substream->stream].posn.dai_posn = 0;
 	spcm->stream[substream->stream].substream = substream;
 
-	ret = snd_sof_pcm_platform_open(sdev, substream);
-	if (ret < 0) {
-		dev_err(sdev->dev, "error: pcm open failed %d\n",
-			ret);
-
-		pm_runtime_mark_last_busy(sdev->dev);
-
-		err = pm_runtime_put_autosuspend(sdev->dev);
-		if (err < 0)
-			dev_err(sdev->dev, "error: pcm close failed to idle %d\n",
-				err);
-	}
+	snd_sof_pcm_platform_open(sdev, substream);
 
 	mutex_unlock(&spcm->mutex);
-	return ret;
+	return 0;
 }
 
 static int sof_pcm_close(struct snd_pcm_substream *substream)
@@ -462,15 +450,7 @@ static int sof_pcm_close(struct snd_pcm_substream *substream)
 	dev_dbg(sdev->dev, "pcm: close stream %d dir %d\n", spcm->pcm.pcm_id,
 		substream->stream);
 
-	err = snd_sof_pcm_platform_close(sdev, substream);
-	if (err < 0) {
-		dev_err(sdev->dev, "error: pcm close failed %d\n",
-			err);
-		/*
-		 * keep going, no point in preventing the close
-		 * from happening
-		 */
-	}
+	snd_sof_pcm_platform_close(sdev, substream);
 
 	mutex_lock(&spcm->mutex);
 	pm_runtime_mark_last_busy(sdev->dev);
