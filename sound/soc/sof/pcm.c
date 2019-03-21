@@ -27,13 +27,9 @@ static int create_page_table(struct snd_pcm_substream *substream,
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
+	struct snd_sof_pcm *spcm = rtd->private;
 	struct snd_dma_buffer *dmab = snd_pcm_get_dma_buf(substream);
 	int stream = substream->stream;
-
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
 
 	return snd_sof_create_page_table(sdev, dmab,
 		spcm->stream[stream].page_table.area, size);
@@ -49,7 +45,7 @@ static int sof_pcm_hw_params(struct snd_pcm_substream *substream,
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
+	struct snd_sof_pcm *spcm = rtd->private;
 	struct sof_ipc_pcm_params pcm;
 	struct sof_ipc_pcm_params_reply ipc_params_reply;
 	int posn_offset;
@@ -58,10 +54,6 @@ static int sof_pcm_hw_params(struct snd_pcm_substream *substream,
 	/* nothing todo for BE */
 	if (rtd->dai_link->no_pcm)
 		return 0;
-
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
 
 	dev_dbg(sdev->dev, "pcm: hw params stream %d dir %d\n",
 		spcm->pcm.pcm_id, substream->stream);
@@ -184,7 +176,7 @@ static int sof_pcm_hw_free(struct snd_pcm_substream *substream)
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
+	struct snd_sof_pcm *spcm = rtd->private;
 	struct sof_ipc_stream stream;
 	struct sof_ipc_reply reply;
 	int ret;
@@ -192,10 +184,6 @@ static int sof_pcm_hw_free(struct snd_pcm_substream *substream)
 	/* nothing todo for BE */
 	if (rtd->dai_link->no_pcm)
 		return 0;
-
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
 
 	dev_dbg(sdev->dev, "pcm: free stream %d dir %d\n", spcm->pcm.pcm_id,
 		substream->stream);
@@ -250,7 +238,7 @@ static int sof_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
+	struct snd_sof_pcm *spcm = rtd->private;
 	struct sof_ipc_stream stream;
 	struct sof_ipc_reply reply;
 	int ret = 0;
@@ -258,10 +246,6 @@ static int sof_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 	/* nothing todo for BE */
 	if (rtd->dai_link->no_pcm)
 		return 0;
-
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
 
 	dev_dbg(sdev->dev, "pcm: trigger stream %d dir %d cmd %d\n",
 		spcm->pcm.pcm_id, substream->stream, cmd);
@@ -352,7 +336,7 @@ static snd_pcm_uframes_t sof_pcm_pointer(struct snd_pcm_substream *substream)
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
+	struct snd_sof_pcm *spcm = rtd->private;
 	snd_pcm_uframes_t host = 0, dai = 0;
 
 	/* nothing todo for BE */
@@ -362,10 +346,6 @@ static snd_pcm_uframes_t sof_pcm_pointer(struct snd_pcm_substream *substream)
 	/* if have dsp ops pointer callback, use that directly */
 	if (sof_ops(sdev)->pcm_pointer)
 		return sof_ops(sdev)->pcm_pointer(sdev, substream);
-
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
 
 	/* read position from DSP */
 	host = bytes_to_frames(substream->runtime,
@@ -387,8 +367,9 @@ static int sof_pcm_open(struct snd_pcm_substream *substream)
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
-	struct snd_soc_tplg_stream_caps *caps;
+	struct snd_sof_pcm *spcm = rtd->private;
+	struct snd_soc_tplg_stream_caps *caps =
+		&spcm->pcm.caps[substream->stream];
 	int ret;
 	int err;
 
@@ -396,14 +377,8 @@ static int sof_pcm_open(struct snd_pcm_substream *substream)
 	if (rtd->dai_link->no_pcm)
 		return 0;
 
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
-
 	dev_dbg(sdev->dev, "pcm: open stream %d dir %d\n", spcm->pcm.pcm_id,
 		substream->stream);
-
-	caps = &spcm->pcm.caps[substream->stream];
 
 	mutex_lock(&spcm->mutex);
 
@@ -477,16 +452,12 @@ static int sof_pcm_close(struct snd_pcm_substream *substream)
 		snd_soc_rtdcom_lookup(rtd, DRV_NAME);
 	struct snd_sof_dev *sdev =
 		snd_soc_component_get_drvdata(component);
-	struct snd_sof_pcm *spcm;
+	struct snd_sof_pcm *spcm = rtd->private;
 	int err;
 
 	/* nothing todo for BE */
 	if (rtd->dai_link->no_pcm)
 		return 0;
-
-	spcm = snd_sof_find_spcm_dai(sdev, rtd);
-	if (!spcm)
-		return -EINVAL;
 
 	dev_dbg(sdev->dev, "pcm: close stream %d dir %d\n", spcm->pcm.pcm_id,
 		substream->stream);
@@ -547,6 +518,7 @@ static int sof_pcm_new(struct snd_soc_pcm_runtime *rtd)
 			 rtd->dai_link->id);
 		return 0;
 	}
+	rtd->private = spcm;
 
 	dev_dbg(sdev->dev, "creating new PCM %s\n", spcm->pcm.pcm_name);
 
