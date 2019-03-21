@@ -397,6 +397,7 @@ static int
 cl_skl_cldma_copy_to_buf(struct snd_sof_dev *sdev, const void *bin,
 			 u32 total_size, u32 bufsize)
 {
+	int ret = 0;
 	unsigned int bytes_left = total_size;
 	const void *curr_pos = bin;
 
@@ -412,6 +413,13 @@ cl_skl_cldma_copy_to_buf(struct snd_sof_dev *sdev, const void *bin,
 
 			cl_skl_cldma_fill_buffer(sdev, bufsize, bufsize,
 						 curr_pos, true, true);
+
+			if (ret < 0) {
+				dev_err(sdev->dev, "error: fw failed to load. 0x%x bytes remaining\n",
+					bytes_left);
+				cl_skl_cldma_stream_run(sdev, false);
+				return ret;
+			}
 
 			bytes_left -= bufsize;
 			curr_pos += bufsize;
