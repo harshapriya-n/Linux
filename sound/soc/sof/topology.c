@@ -1899,7 +1899,7 @@ static int sof_dai_load(struct snd_soc_component *scomp, int index,
 	caps = &spcm->pcm.caps[stream];
 
 	/* allocate playback page table buffer */
-	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, sdev->dev,
+	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, sdev->parent,
 				  PAGE_SIZE, &spcm->stream[stream].page_table);
 	if (ret < 0) {
 		dev_err(sdev->dev, "error: can't alloc page table for %s %d\n",
@@ -1918,7 +1918,7 @@ capture:
 	caps = &spcm->pcm.caps[stream];
 
 	/* allocate capture page table buffer */
-	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, sdev->dev,
+	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, sdev->parent,
 				  PAGE_SIZE, &spcm->stream[stream].page_table);
 	if (ret < 0) {
 		dev_err(sdev->dev, "error: can't alloc page table for %s %d\n",
@@ -2344,7 +2344,7 @@ static int sof_link_load(struct snd_soc_component *scomp, int index,
 	struct snd_soc_tplg_hw_config *hw_config;
 	int ret = 0;
 
-	link->platform_name = dev_name(sdev->dev);
+	link->platform_name = "sof-audio";
 
 	/*
 	 * Set nonatomic property for FE dai links as their trigger action
