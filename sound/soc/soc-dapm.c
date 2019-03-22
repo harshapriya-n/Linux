@@ -64,29 +64,32 @@ snd_soc_dapm_new_control_unlocked(struct snd_soc_dapm_context *dapm,
 
 /* dapm power sequences - make this per codec in the future */
 static int dapm_up_seq[] = {
-	[snd_soc_dapm_pre] = 1,
-	[snd_soc_dapm_regulator_supply] = 2,
-	[snd_soc_dapm_pinctrl] = 2,
-	[snd_soc_dapm_clock_supply] = 2,
-	[snd_soc_dapm_supply] = 3,
-	[snd_soc_dapm_micbias] = 4,
-	[snd_soc_dapm_vmid] = 4,
-	[snd_soc_dapm_dai_link] = 3,
-	[snd_soc_dapm_dai_in] = 5,
-	[snd_soc_dapm_dai_out] = 5,
-	[snd_soc_dapm_aif_in] = 5,
-	[snd_soc_dapm_aif_out] = 5,
-	[snd_soc_dapm_mic] = 6,
-	[snd_soc_dapm_siggen] = 6,
-	[snd_soc_dapm_input] = 6,
-	[snd_soc_dapm_output] = 6,
-	[snd_soc_dapm_mux] = 7,
-	[snd_soc_dapm_demux] = 7,
-	[snd_soc_dapm_dac] = 8,
-	[snd_soc_dapm_switch] = 9,
-	[snd_soc_dapm_mixer] = 9,
-	[snd_soc_dapm_mixer_named_ctl] = 9,
-	[snd_soc_dapm_pga] = 10,
+	[snd_soc_dapm_pre] = 0,
+	[snd_soc_dapm_regulator_supply] = 1,
+	[snd_soc_dapm_pinctrl] = 1,
+	[snd_soc_dapm_clock_supply] = 1,
+	[snd_soc_dapm_supply] = 2,
+	[snd_soc_dapm_micbias] = 3,
+	[snd_soc_dapm_dai_link] = 2,
+	[snd_soc_dapm_dai_in] = 4,
+	[snd_soc_dapm_dai_out] = 4,
+	[snd_soc_dapm_aif_in] = 4,
+	[snd_soc_dapm_aif_out] = 4,
+	[snd_soc_dapm_mic] = 5,
+	[snd_soc_dapm_mux] = 6,
+	[snd_soc_dapm_demux] = 6,
+	[snd_soc_dapm_dac] = 7,
+	[snd_soc_dapm_switch] = 8,
+	[snd_soc_dapm_mixer] = 8,
+	[snd_soc_dapm_mixer_named_ctl] = 8,
+	[snd_soc_dapm_pga] = 9,
+	[snd_soc_dapm_adc] = 10,
+	[snd_soc_dapm_input] = 10,
+	[snd_soc_dapm_output] = 10,
+	[snd_soc_dapm_mic] = 10,
+	[snd_soc_dapm_vmid] = 10,
+	[snd_soc_dapm_siggen] = 10,
+	[snd_soc_dapm_sink] = 10,
 	[snd_soc_dapm_buffer] = 10,
 	[snd_soc_dapm_scheduler] = 10,
 	[snd_soc_dapm_effect] = 10,
@@ -142,55 +145,6 @@ static int dapm_down_seq[] = {
 	[snd_soc_dapm_pinctrl] = 13,
 	[snd_soc_dapm_regulator_supply] = 13,
 	[snd_soc_dapm_post] = 14,
-	[snd_soc_dapm_adc] = 11,
-	[snd_soc_dapm_out_drv] = 12,
-	[snd_soc_dapm_hp] = 12,
-	[snd_soc_dapm_spk] = 12,
-	[snd_soc_dapm_line] = 12,
-	[snd_soc_dapm_sink] = 12,
-	[snd_soc_dapm_kcontrol] = 13,
-	[snd_soc_dapm_post] = 14,
-};
-
-static int dapm_down_seq[] = {
-	[snd_soc_dapm_pre] = 1,
-	[snd_soc_dapm_kcontrol] = 2,
-	[snd_soc_dapm_adc] = 3,
-	[snd_soc_dapm_hp] = 4,
-	[snd_soc_dapm_spk] = 4,
-	[snd_soc_dapm_line] = 4,
-	[snd_soc_dapm_out_drv] = 4,
-	[snd_soc_dapm_sink] = 4,
-	[snd_soc_dapm_pga] = 5,
-	[snd_soc_dapm_buffer] = 5,
-	[snd_soc_dapm_scheduler] = 5,
-	[snd_soc_dapm_effect] = 5,
-	[snd_soc_dapm_src] = 5,
-	[snd_soc_dapm_asrc] = 5,
-	[snd_soc_dapm_encoder] = 5,
-	[snd_soc_dapm_decoder] = 5,
-	[snd_soc_dapm_switch] = 6,
-	[snd_soc_dapm_mixer_named_ctl] = 6,
-	[snd_soc_dapm_mixer] = 6,
-	[snd_soc_dapm_dac] = 7,
-	[snd_soc_dapm_mic] = 8,
-	[snd_soc_dapm_siggen] = 8,
-	[snd_soc_dapm_input] = 8,
-	[snd_soc_dapm_output] = 8,
-	[snd_soc_dapm_micbias] = 9,
-	[snd_soc_dapm_vmid] = 9,
-	[snd_soc_dapm_mux] = 10,
-	[snd_soc_dapm_demux] = 10,
-	[snd_soc_dapm_aif_in] = 11,
-	[snd_soc_dapm_aif_out] = 11,
-	[snd_soc_dapm_dai_in] = 11,
-	[snd_soc_dapm_dai_out] = 11,
-	[snd_soc_dapm_dai_link] = 12,
-	[snd_soc_dapm_supply] = 13,
-	[snd_soc_dapm_clock_supply] = 14,
-	[snd_soc_dapm_pinctrl] = 14,
-	[snd_soc_dapm_regulator_supply] = 14,
-	[snd_soc_dapm_post] = 15,
 };
 
 static void dapm_assert_locked(struct snd_soc_dapm_context *dapm)
@@ -1477,16 +1431,10 @@ static int dapm_seq_compare(struct snd_soc_dapm_widget *a,
 {
 	int *sort;
 
-	BUILD_BUG_ON(ARRAY_SIZE(dapm_up_seq) != SND_SOC_DAPM_TYPE_COUNT);
-	BUILD_BUG_ON(ARRAY_SIZE(dapm_down_seq) != SND_SOC_DAPM_TYPE_COUNT);
-
 	if (power_up)
 		sort = dapm_up_seq;
 	else
 		sort = dapm_down_seq;
-
-	WARN_ONCE(sort[a->id] == 0, "offset a->id %d not initialized\n", a->id);
-	WARN_ONCE(sort[b->id] == 0, "offset b->id %d not initialized\n", b->id);
 
 	if (sort[a->id] != sort[b->id])
 		return sort[a->id] - sort[b->id];
