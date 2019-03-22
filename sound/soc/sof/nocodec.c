@@ -16,10 +16,9 @@ static struct snd_soc_card sof_nocodec_card = {
 	.name = "nocodec", /* the sof- prefix is added by the core */
 };
 
-static int sof_nocodec_bes_setup(struct device *dev,
-				 const struct snd_sof_dsp_ops *ops,
-				 struct snd_soc_dai_link *links,
-				 int link_num, struct snd_soc_card *card)
+int sof_nocodec_bes_setup(struct device *dev, const struct snd_sof_dsp_ops *ops,
+			  struct snd_soc_dai_link *links, int link_num,
+			  struct snd_soc_card *card)
 {
 	int i;
 
