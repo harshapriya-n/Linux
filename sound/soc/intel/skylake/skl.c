@@ -336,7 +336,18 @@ static int skl_suspend(struct device *dev)
 		skl->skl_sst->fw_loaded = false;
 	}
 
+<<<<<<< HEAD
 	return 0;
+=======
+	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
+		ret = snd_hdac_display_power(bus, false);
+		if (ret < 0)
+			dev_err(bus->dev,
+				"Cannot turn OFF display power on i915\n");
+	}
+
+	return ret;
+>>>>>>> parent of a2f3ba8be8ec... [BACKPORT] ALSA: hda: Refactor display power management
 }
 
 static int skl_resume(struct device *dev)
@@ -346,6 +357,16 @@ static int skl_resume(struct device *dev)
 	struct skl *skl  = bus_to_skl(bus);
 	struct hdac_ext_link *hlink = NULL;
 	int ret;
+
+	/* Turned OFF in HDMI codec driver after codec reconfiguration */
+	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
+		ret = snd_hdac_display_power(bus, true);
+		if (ret < 0) {
+			dev_err(bus->dev,
+				"Cannot turn on display power on i915\n");
+			return ret;
+		}
+	}
 
 	/*
 	 * resume only when we are not in suspend active, otherwise need to
@@ -774,7 +795,9 @@ static int skl_i915_init(struct hdac_bus *bus)
 	if (err < 0)
 		return err;
 
-	snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, true);
+	err = snd_hdac_display_power(bus, true);
+	if (err < 0)
+		dev_err(bus->dev, "Cannot turn on display power on i915\n");
 
 	return 0;
 }
@@ -824,8 +847,14 @@ static void skl_probe_work(struct work_struct *work)
 	list_for_each_entry(hlink, &bus->hlink_list, list)
 		snd_hdac_ext_bus_link_put(bus, hlink);
 
-	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
-		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
+	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI)) {
+		err = snd_hdac_display_power(bus, false);
+		if (err < 0) {
+			dev_err(bus->dev, "Cannot turn off display power on i915\n");
+			skl_machine_device_unregister(skl);
+			return;
+		}
+	}
 
 	/* configure PM */
 	pm_runtime_put_noidle(bus->dev);
@@ -836,7 +865,11 @@ static void skl_probe_work(struct work_struct *work)
 
 out_err:
 	if (IS_ENABLED(CONFIG_SND_SOC_HDAC_HDMI))
+<<<<<<< HEAD
 		snd_hdac_display_power(bus, HDA_CODEC_IDX_CONTROLLER, false);
+=======
+		err = snd_hdac_display_power(bus, false);
+>>>>>>> parent of a2f3ba8be8ec... [BACKPORT] ALSA: hda: Refactor display power management
 }
 
 /*
