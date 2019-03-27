@@ -35,7 +35,6 @@
 #define DUAL_CHANNEL		2
 #define QUAD_CHANNEL		4
 
-static struct snd_soc_card *audio_card;
 static struct snd_soc_jack broxton_headset;
 static struct snd_soc_jack broxton_hdmi[3];
 
@@ -186,7 +185,6 @@ static int broxton_ssp_fixup(struct snd_soc_pcm_runtime *rtd,
 static int broxton_da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
 	int ret;
-	struct snd_soc_jack *jack;
 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
 	struct snd_soc_component *component = rtd->codec_dai->component;
 
@@ -360,15 +358,6 @@ static const struct snd_pcm_hw_constraint_list constraints_refcap = {
 static const struct snd_pcm_hw_constraint_list constraints_16000 = {
 	.count = ARRAY_SIZE(rates_16000),
 	.list  = rates_16000,
-};
-
-static const unsigned int ch_mono[] = {
-	1,
-};
-
-static const struct snd_pcm_hw_constraint_list constraints_refcap = {
-	.count = ARRAY_SIZE(ch_mono),
-	.list  = ch_mono,
 };
 
 static int broxton_refcap_startup(struct snd_pcm_substream *substream)
@@ -630,7 +619,7 @@ static int bxt_card_late_probe(struct snd_soc_card *card)
 }
 
 /* broxton audio machine driver for SPT + da7219 */
-static struct snd_soc_card bxt_audio_card_da7219_m98357a = {
+static struct snd_soc_card broxton_audio_card = {
 	.name = "bxtda7219max",
 	.owner = THIS_MODULE,
 	.dai_link = broxton_dais,
