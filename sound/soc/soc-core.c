@@ -2036,12 +2036,13 @@ match:
 
 static int soc_cleanup_card_resources(struct snd_soc_card *card)
 {
+	soc_remove_dai_links(card);
+
 	/* free the ALSA card at first; this syncs with pending operations */
 	if (card->snd_card)
 		snd_card_free(card->snd_card);
 
 	/* remove and free each DAI */
-	soc_remove_dai_links(card);
 	soc_remove_pcm_runtimes(card);
 
 	/* remove auxiliary devices */
@@ -3322,8 +3323,6 @@ static int __snd_soc_unregister_component(struct device *dev)
 		if (dev != component->dev)
 			continue;
 
-		snd_soc_tplg_component_remove(component,
-					      SND_SOC_TPLG_INDEX_ALL);
 		snd_soc_component_del_unlocked(component);
 		found = 1;
 		break;
