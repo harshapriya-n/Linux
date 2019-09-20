@@ -15,6 +15,7 @@
 #include <sound/sof.h>
 #include "sof-priv.h"
 #include "ops.h"
+#include "sof-mfd.h"
 
 /* see SOF_DBG_ flags */
 int sof_core_debug;
@@ -258,47 +259,9 @@ int snd_sof_create_page_table(struct snd_sof_dev *sdev,
 	return pages;
 }
 
-/*
- * SOF Driver enumeration.
- */
-static int sof_machine_check(struct snd_sof_dev *sdev)
-{
-	struct snd_sof_pdata *plat_data = sdev->pdata;
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)
-	struct snd_soc_acpi_mach *machine;
-	int ret;
-#endif
-
-	if (plat_data->machine)
-		return 0;
-
-#if !IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)
-	dev_err(sdev->dev, "error: no matching ASoC machine driver found - aborting probe\n");
-	return -ENODEV;
-#else
-	/* fallback to nocodec mode */
-	dev_warn(sdev->dev, "No ASoC machine driver found - using nocodec\n");
-	machine = devm_kzalloc(sdev->dev, sizeof(*machine), GFP_KERNEL);
-	if (!machine)
-		return -ENOMEM;
-
-	ret = sof_nocodec_setup(sdev->dev, plat_data, machine,
-				plat_data->desc, plat_data->desc->ops);
-	if (ret < 0)
-		return ret;
-
-	plat_data->machine = machine;
-
-	return 0;
-#endif
-}
-
 static int sof_probe_continue(struct snd_sof_dev *sdev)
 {
 	struct snd_sof_pdata *plat_data = sdev->pdata;
-	const char *drv_name;
-	const void *mach;
-	int size;
 	int ret;
 
 	/* probe the DSP hardware */
@@ -307,17 +270,6 @@ static int sof_probe_continue(struct snd_sof_dev *sdev)
 		dev_err(sdev->dev, "error: failed to probe DSP %d\n", ret);
 		return ret;
 	}
-
-	/* check machine info */
-	ret = sof_machine_check(sdev);
-	if (ret < 0) {
-		dev_err(sdev->dev, "error: failed to get machine info %d\n",
-			ret);
-		goto dbg_err;
-	}
-
-	/* set up platform component driver */
-	snd_sof_new_platform_drv(sdev);
 
 	/* register any debug/trace capabilities */
 	ret = snd_sof_dbg_init(sdev);
@@ -374,32 +326,8 @@ static int sof_probe_continue(struct snd_sof_dev *sdev)
 	/* hereafter all FW boot flows are for PM reasons */
 	sdev->first_boot = false;
 
-	/* now register audio DSP platform driver and dai */
-	ret = devm_snd_soc_register_component(sdev->dev, &sdev->plat_drv,
-					      sof_ops(sdev)->drv,
-					      sof_ops(sdev)->num_drv);
-	if (ret < 0) {
-		dev_err(sdev->dev,
-			"error: failed to register DSP DAI driver %d\n", ret);
-		goto fw_run_err;
-	}
-
-	drv_name = plat_data->machine->drv_name;
-	mach = (const void *)plat_data->machine;
-	size = sizeof(*plat_data->machine);
-
-	/* register machine driver, pass machine info as pdata */
-	plat_data->pdev_mach =
-		platform_device_register_data(sdev->dev, drv_name,
-					      PLATFORM_DEVID_NONE, mach, size);
-
-	if (IS_ERR(plat_data->pdev_mach)) {
-		ret = PTR_ERR(plat_data->pdev_mach);
-		goto fw_run_err;
-	}
-
-	dev_dbg(sdev->dev, "created machine %s\n",
-		dev_name(&plat_data->pdev_mach->dev));
+	/* register audio client */
+	sof_client_dev_register(sdev, "sof-audio", &sdev->sof_audio.pdev);
 
 	if (plat_data->sof_probe_complete)
 		plat_data->sof_probe_complete(sdev->dev);
@@ -423,7 +351,6 @@ dbg_err:
 	 * They will be released with an explicit call to
 	 * snd_sof_device_remove() when the PCI/ACPI device is removed
 	 */
-
 fw_run_err:
 fw_load_err:
 ipc_err:
@@ -510,6 +437,9 @@ int snd_sof_device_remove(struct device *dev)
 
 	if (IS_ENABLED(CONFIG_SND_SOC_SOF_PROBE_WORK_QUEUE))
 		cancel_work_sync(&sdev->probe_work);
+
+	/* unregister audio client device */
+	sof_client_dev_unregister(&sdev->sof_audio.pdev);
 
 	snd_sof_fw_unload(sdev);
 	snd_sof_ipc_free(sdev);

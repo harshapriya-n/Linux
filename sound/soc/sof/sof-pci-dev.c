@@ -326,6 +326,7 @@ static int sof_pci_probe(struct pci_dev *pci,
 		dev_warn(dev, "warning: No matching ASoC machine driver found\n");
 	} else {
 		mach->mach_params.platform = dev_name(dev);
+		dev_dbg(dev, "ranjani %s\n", dev_name(dev));
 		sof_pdata->fw_filename = mach->sof_fw_filename;
 		sof_pdata->tplg_filename = mach->sof_tplg_filename;
 	}
@@ -335,7 +336,6 @@ static int sof_pci_probe(struct pci_dev *pci,
 	sof_pdata->machine = mach;
 	sof_pdata->desc = (struct sof_dev_desc *)pci_id->driver_data;
 	sof_pdata->dev = dev;
-	sof_pdata->platform = dev_name(dev);
 
 	/* alternate fw and tplg filenames ? */
 	if (fw_path)

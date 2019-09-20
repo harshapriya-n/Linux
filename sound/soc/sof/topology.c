@@ -2844,7 +2844,9 @@ static int sof_link_load(struct snd_soc_component *scomp, int index,
 		dev_err(sdev->dev, "error: no platforms\n");
 		return -EINVAL;
 	}
-	link->platforms->name = dev_name(sdev->dev);
+
+	/* set platform name */
+	link->platforms->name = dev_name(scomp->dev);
 
 	/*
 	 * Set nonatomic property for FE dai links as their trigger action
