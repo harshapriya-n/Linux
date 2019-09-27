@@ -45,6 +45,7 @@ static const struct sof_dev_desc sof_acpi_haswell_desc = {
 	.chip_info = &hsw_chip_info,
 	.default_fw_path = "intel/sof",
 	.default_tplg_path = "intel/sof-tplg",
+	.default_fw_filename = "sof-hsw.ri",
 	.nocodec_fw_filename = "sof-hsw.ri",
 	.nocodec_tplg_filename = "sof-hsw-nocodec.tplg",
 	.ops = &sof_hsw_ops,
@@ -63,6 +64,7 @@ static const struct sof_dev_desc sof_acpi_broadwell_desc = {
 	.chip_info = &bdw_chip_info,
 	.default_fw_path = "intel/sof",
 	.default_tplg_path = "intel/sof-tplg",
+	.default_fw_filename = "sof-bdw.ri",
 	.nocodec_fw_filename = "sof-bdw.ri",
 	.nocodec_tplg_filename = "sof-bdw-nocodec.tplg",
 	.ops = &sof_bdw_ops,
@@ -83,6 +85,7 @@ static const struct sof_dev_desc sof_acpi_baytrailcr_desc = {
 	.chip_info = &byt_chip_info,
 	.default_fw_path = "intel/sof",
 	.default_tplg_path = "intel/sof-tplg",
+	.default_fw_filename = "sof-byt.ri",
 	.nocodec_fw_filename = "sof-byt.ri",
 	.nocodec_tplg_filename = "sof-byt-nocodec.tplg",
 	.ops = &sof_byt_ops,
@@ -99,6 +102,7 @@ static const struct sof_dev_desc sof_acpi_baytrail_desc = {
 	.chip_info = &byt_chip_info,
 	.default_fw_path = "intel/sof",
 	.default_tplg_path = "intel/sof-tplg",
+	.default_fw_filename = "sof-byt.ri",
 	.nocodec_fw_filename = "sof-byt.ri",
 	.nocodec_tplg_filename = "sof-byt-nocodec.tplg",
 	.ops = &sof_byt_ops,
@@ -115,6 +119,7 @@ static const struct sof_dev_desc sof_acpi_cherrytrail_desc = {
 	.chip_info = &cht_chip_info,
 	.default_fw_path = "intel/sof",
 	.default_tplg_path = "intel/sof-tplg",
+	.default_fw_filename = "sof-cht.ri",
 	.nocodec_fw_filename = "sof-cht.ri",
 	.nocodec_tplg_filename = "sof-cht-nocodec.tplg",
 	.ops = &sof_cht_ops,
@@ -145,7 +150,6 @@ static int sof_acpi_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	const struct sof_dev_desc *desc;
-	struct snd_soc_acpi_mach *mach;
 	struct snd_sof_pdata *sof_pdata;
 	const struct snd_sof_dsp_ops *ops;
 	int ret;
@@ -172,35 +176,9 @@ static int sof_acpi_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
-#if IS_ENABLED(CONFIG_SND_SOC_SOF_FORCE_NOCODEC_MODE)
-	/* force nocodec mode */
-	dev_warn(dev, "Force to use nocodec mode\n");
-	mach = devm_kzalloc(dev, sizeof(*mach), GFP_KERNEL);
-	if (!mach)
-		return -ENOMEM;
-	ret = sof_nocodec_setup(dev, sof_pdata, mach, desc, ops);
-	if (ret < 0)
-		return ret;
-#else
-	/* find machine */
-	mach = snd_soc_acpi_find_machine(desc->machines);
-	if (!mach) {
-		dev_warn(dev, "warning: No matching ASoC machine driver found\n");
-	} else {
-		sof_pdata->fw_filename = mach->sof_fw_filename;
-		sof_pdata->tplg_filename = mach->sof_tplg_filename;
-	}
-#endif
-
-	if (mach) {
-		mach->mach_params.platform = dev_name(dev);
-		mach->mach_params.acpi_ipc_irq_index = desc->irqindex_host_ipc;
-	}
-
-	sof_pdata->machine = mach;
 	sof_pdata->desc = desc;
 	sof_pdata->dev = &pdev->dev;
-	sof_pdata->platform = dev_name(dev);
+	sof_pdata->fw_filename = desc->default_fw_filename;
 
 	/* alternate fw and tplg filenames ? */
 	if (fw_path)
@@ -208,12 +186,6 @@ static int sof_acpi_probe(struct platform_device *pdev)
 	else
 		sof_pdata->fw_filename_prefix =
 			sof_pdata->desc->default_fw_path;
-
-	if (tplg_path)
-		sof_pdata->tplg_filename_prefix = tplg_path;
-	else
-		sof_pdata->tplg_filename_prefix =
-			sof_pdata->desc->default_tplg_path;
 
 #if IS_ENABLED(CONFIG_SND_SOC_SOF_PROBE_WORK_QUEUE)
 	/* set callback to enable runtime_pm */
