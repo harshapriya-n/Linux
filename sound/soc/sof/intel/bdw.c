@@ -597,7 +597,7 @@ const struct snd_sof_audio_ops sof_bdw_audio_ops = {
 
 	/* DAI drivers */
 	.drv = bdw_dai,
-	.num_drv = ARRAY_SIZE(bdw_dai)
+	.num_ssp_drv = ARRAY_SIZE(bdw_dai)
 };
 EXPORT_SYMBOL(sof_bdw_audio_ops);
 

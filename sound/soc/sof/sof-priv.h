@@ -344,7 +344,9 @@ struct snd_sof_dev {
 	bool msi_enabled;
 
 	/* client devices */
-	struct sof_mfd_client *sof_audio;
+	struct sof_mfd_client *sof_ssp_audio;
+	struct sof_mfd_client *sof_hda_audio;
+	struct sof_mfd_client *sof_dmic_audio;
 
 	/* IPC rx client table */
 	struct list_head ipc_rx_list;

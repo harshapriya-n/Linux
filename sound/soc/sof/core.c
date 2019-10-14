@@ -31,6 +31,7 @@ void snd_sof_ipc_rx_register(struct snd_sof_dev *sdev,
 {
 	list_add(&rx_client->list, &sdev->ipc_rx_list);
 }
+EXPORT_SYMBOL(snd_sof_ipc_rx_register);
 
 /*
  * Generic buffer page table creation.
@@ -230,9 +231,25 @@ static int sof_probe_continue(struct snd_sof_dev *sdev)
 	 * Register audio client.
 	 * This can fail but errors cannot be propagated.
 	 */
-	sdev->sof_audio = sof_client_dev_register(sdev, "sof-audio");
-	if (!sdev->sof_audio)
-		dev_warn(sdev->dev, "sof-audio client failed to register\n");
+	sdev->sof_ssp_audio = sof_client_dev_register(sdev, "sof-ssp-audio");
+	if (!sdev->sof_ssp_audio)
+		dev_warn(sdev->dev, "sof-ssp-audio client failed to register\n");
+
+	/*
+	 * Register HDMI audio client.
+	 * This can fail but errors cannot be propagated.
+	 */
+	sdev->sof_hda_audio = sof_client_dev_register(sdev, "sof-hda-audio");
+	if (!sdev->sof_hda_audio)
+		dev_warn(sdev->dev, "sof-hdmi-audio client failed to register\n");
+
+	/*
+	 * Register DMIC audio client.
+	 * This can fail but errors cannot be propagated.
+	 */
+	sdev->sof_dmic_audio = sof_client_dev_register(sdev, "sof-dmic-audio");
+	if (!sdev->sof_dmic_audio)
+		dev_warn(sdev->dev, "sof-dmic-audio client failed to register\n");
 
 	if (plat_data->sof_probe_complete)
 		plat_data->sof_probe_complete(sdev->dev);
@@ -338,9 +355,15 @@ int snd_sof_device_remove(struct device *dev)
 	if (IS_ENABLED(CONFIG_SND_SOC_SOF_PROBE_WORK_QUEUE))
 		cancel_work_sync(&sdev->probe_work);
 
-	/* Unregister audio client device */
-	if (sdev->sof_audio)
-		sof_client_dev_unregister(sdev->sof_audio);
+	/* Unregister client devices */
+	if (sdev->sof_ssp_audio)
+		sof_client_dev_unregister(sdev->sof_ssp_audio);
+
+	if (sdev->sof_hda_audio)
+		sof_client_dev_unregister(sdev->sof_hda_audio);
+
+	if (sdev->sof_dmic_audio)
+		sof_client_dev_unregister(sdev->sof_dmic_audio);
 
 	snd_sof_fw_unload(sdev);
 	snd_sof_ipc_free(sdev);

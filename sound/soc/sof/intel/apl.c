@@ -107,7 +107,9 @@ const struct snd_sof_audio_ops sof_apl_audio_ops = {
 
 	/* DAI drivers */
 	.drv		= skl_dai,
-	.num_drv	= SOF_SKL_NUM_DAIS,
+	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
+	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
+	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(sof_apl_audio_ops);
 

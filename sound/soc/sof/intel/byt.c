@@ -537,7 +537,7 @@ const struct snd_sof_audio_ops sof_tng_audio_ops = {
 
 	/* DAI drivers */
 	.drv = byt_dai,
-	.num_drv = 3, /* we have only 3 SSPs on byt */
+	.num_ssp_drv = 3, /* we have only 3 SSPs on byt */
 };
 EXPORT_SYMBOL(sof_tng_audio_ops);
 
@@ -703,7 +703,7 @@ const struct snd_sof_audio_ops sof_byt_audio_ops = {
 
 	/* DAI drivers */
 	.drv = byt_dai,
-	.num_drv = 3, /* we have only 3 SSPs on byt*/
+	.num_ssp_drv = 3, /* we have only 3 SSPs on byt*/
 };
 EXPORT_SYMBOL(sof_byt_audio_ops);
 
@@ -768,7 +768,7 @@ const struct snd_sof_audio_ops sof_cht_audio_ops = {
 	/* DAI drivers */
 	.drv = byt_dai,
 	/* all 6 SSPs may be available for cherrytrail */
-	.num_drv = ARRAY_SIZE(byt_dai),
+	.num_ssp_drv = ARRAY_SIZE(byt_dai),
 };
 EXPORT_SYMBOL(sof_cht_audio_ops);
 
