@@ -584,6 +584,10 @@ const struct snd_sof_dsp_ops sof_bdw_ops = {
 
 	/*Firmware loading */
 	.load_firmware	= snd_sof_load_firmware_memcpy,
+
+	/* MFD */
+	.register_clients	= intel_register_clients,
+	.unregister_clients	= intel_unregister_clients,
 };
 EXPORT_SYMBOL(sof_bdw_ops);
 

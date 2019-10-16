@@ -168,6 +168,9 @@ struct snd_sof_dsp_ops {
 	int (*trace_trigger)(struct snd_sof_dev *sdev,
 			     int cmd); /* optional */
 
+	/* MFD */
+	int (*register_clients)(struct snd_sof_dev *sdev); /* optional */
+
 	/* misc */
 	int (*get_bar_index)(struct snd_sof_dev *sdev,
 			     u32 type); /* optional */
@@ -344,9 +347,8 @@ struct snd_sof_dev {
 	bool msi_enabled;
 
 	/* client devices */
-	struct sof_mfd_client *sof_ssp_audio;
-	struct sof_mfd_client *sof_hda_audio;
-	struct sof_mfd_client *sof_dmic_audio;
+	struct sof_mfd_client **sof_clients;
+	struct sof_num_clients;
 
 	/* IPC rx client table */
 	struct list_head ipc_rx_list;

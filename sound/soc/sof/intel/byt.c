@@ -524,6 +524,9 @@ const struct snd_sof_dsp_ops sof_tng_ops = {
 
 	/*Firmware loading */
 	.load_firmware	= snd_sof_load_firmware_memcpy,
+
+	/* MFD */
+	.register_clients	= intel_register_clients,
 };
 EXPORT_SYMBOL(sof_tng_ops);
 
@@ -690,6 +693,9 @@ const struct snd_sof_dsp_ops sof_byt_ops = {
 
 	/*Firmware loading */
 	.load_firmware	= snd_sof_load_firmware_memcpy,
+
+	/* MFD */
+	.register_clients	= intel_register_clients,
 };
 EXPORT_SYMBOL(sof_byt_ops);
 
@@ -754,6 +760,10 @@ const struct snd_sof_dsp_ops sof_cht_ops = {
 
 	/*Firmware loading */
 	.load_firmware	= snd_sof_load_firmware_memcpy,
+
+	/* MFD */
+	.register_clients	= intel_register_clients,
+	.unregister_clients	= intel_unregister_clients,
 };
 EXPORT_SYMBOL(sof_cht_ops);
 

@@ -244,6 +244,10 @@ const struct snd_sof_dsp_ops sof_cnl_ops = {
 	.runtime_idle		= hda_dsp_runtime_idle,
 	.set_hw_params_upon_resume = hda_dsp_set_hw_params_upon_resume,
 	.set_power_state	= hda_dsp_set_power_state,
+
+	/* MFD */
+	.register_clients	= intel_register_clients,
+	.unregister_clients	= intel_unregister_clients,
 };
 EXPORT_SYMBOL(sof_cnl_ops);
 
