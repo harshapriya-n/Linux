@@ -164,7 +164,17 @@ struct sof_intel_dsp_desc {
 	int rom_init_timeout;
 	int ssp_count;			/* ssp count of the platform */
 	int ssp_base_offset;		/* base address of the SSPs */
+	int num_ssp_drv;
+	int num_dmic_drv;
+	int num_hda_drv;
 };
+
+inline const struct sof_intel_dsp_desc
+	*get_chip_info(struct snd_sof_pdata *pdata)
+{
+	return pdata->desc->chip_info;
+}
+EXPORT_SYMBOL(sof_intel_dsp_desc);
 
 extern const struct snd_sof_dsp_ops sof_tng_ops;
 extern const struct snd_sof_dsp_ops sof_byt_ops;

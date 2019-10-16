@@ -98,9 +98,10 @@ static int sof_audio_select_machine(struct platform_device *pdev,
 
 static int sof_audio_probe(struct platform_device *pdev)
 {
-	struct snd_sof_dev *sdev = dev_get_drvdata(pdev->dev.parent);
-	struct snd_sof_pdata *plat_data = sdev->pdata;
 	struct sof_mfd_client *audio_client = dev_get_platdata(&pdev->dev);
+	struct snd_sof_pdata *plat_data = sdev->pdata;
+	const struct sof_intel_dsp_desc *chip = get_chip_info(plat_data);
+	struct snd_sof_dev *sdev = dev_get_drvdata(pdev->dev.parent);
 	const struct sof_dev_desc *desc = plat_data->desc;
 	struct sof_audio_dev *sof_audio;
 	struct ipc_rx_client *audio_rx;
@@ -109,8 +110,6 @@ static int sof_audio_probe(struct platform_device *pdev)
 	int num_drv;
 	int size;
 	int ret;
-
-	dev_dbg(&pdev->dev, "ranjani here\n");
 
 	/* set IPC RX and TX reply callbacks */
 	audio_client->sof_client_rx_message = sof_audio_rx_message;
@@ -145,7 +144,7 @@ static int sof_audio_probe(struct platform_device *pdev)
 	snd_sof_new_platform_drv(sof_audio);
 
 	/* number of dai drv to register */
-	num_drv = sof_audio->audio_ops->num_ssp_drv;
+	num_drv = chip->num_ssp_drv;
 
 	/* now register audio DSP platform driver and dai */
 	ret = devm_snd_soc_register_component(&pdev->dev, &sof_audio->plat_drv,

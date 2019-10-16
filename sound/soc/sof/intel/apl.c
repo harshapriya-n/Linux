@@ -111,9 +111,7 @@ const struct snd_sof_audio_ops sof_apl_audio_ops = {
 
 	/* DAI drivers */
 	.drv		= skl_dai,
-	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
-	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
-	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
+	.num_nocodec_dailinks = SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(sof_apl_audio_ops);
 
@@ -130,5 +128,8 @@ const struct sof_intel_dsp_desc apl_chip_info = {
 	.rom_init_timeout	= 150,
 	.ssp_count = APL_SSP_COUNT,
 	.ssp_base_offset = APL_SSP_BASE_OFFSET,
+	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
+	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
+	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(apl_chip_info);

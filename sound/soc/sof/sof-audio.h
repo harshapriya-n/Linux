@@ -63,9 +63,7 @@ struct snd_sof_audio_ops {
 
 	/* DAI ops */
 	struct snd_soc_dai_driver *drv;
-	int num_ssp_drv;
-	int num_hda_drv;
-	int num_dmic_drv;
+	int num_nocodec_dailinks;
 };
 
 /* PCM stream, mapped to FW component  */

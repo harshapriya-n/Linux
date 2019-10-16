@@ -8,23 +8,26 @@
 // Authors: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
 
 /* Intel-specific SOF audio client code */
-include "../sof-mfd.h"
+#include "../sof-mfd.h"
+#include "../sof-priv.h"
+#include "shim.h"
 
 int intel_register_audio_clients(struct snd_sof_dev *sdev)
 {
 	struct snd_sof_pdata *plat_data = sdev->pdata;
+	const struct sof_intel_dsp_desc *chip = get_chip_info(plat_data);
 	const struct sof_dev_desc *desc = plat_data->desc;
 	size_t size;
 	int i = 0;
 
 	/* number of audio clients to register */
-	if (desc->audio_ops->num_ssp_drv)
+	if (chip->num_ssp_drv)
 		sdev->sof_num_clients++;
 
-	if (desc->audio_ops->num_dmic_drv)
+	if (chip->num_dmic_drv)
 		sdev->sof_num_clients++;
 
-	if (desc->audio_ops->num_hda_drv)
+	if (chip->num_hda_drv)
 		sdev->sof_num_clients++;
 
 	size = sdev->sof_num_clients * sizeof(*sdev->sof_mfd_clients);
@@ -34,7 +37,7 @@ int intel_register_audio_clients(struct snd_sof_dev *sdev)
 		return -ENOMEM;
 
 	/* register clients. Any of these can fail but the core keeps going */
-	if (desc->audio_ops->num_ssp_drv && i < sdev->sof_num_clients) {
+	if (chip->num_ssp_drv && i < sdev->sof_num_clients) {
 		sdev->sof_mfd_client[i] =
 			sof_client_dev_register(sdev, "sof-ssp-audio");
 		if (!sdev->sof_mfd_client[i])
@@ -43,7 +46,7 @@ int intel_register_audio_clients(struct snd_sof_dev *sdev)
 	}
 	i++;
 
-	if (desc->audio_ops->num_dmic_drv && i < sdev->sof_num_clients) {
+	if (chip->num_dmic_drv && i < sdev->sof_num_clients) {
 		sdev->sof_mfd_client[i] =
 			sof_client_dev_register(sdev, "sof-dmic-audio");
 		if (!sdev->sof_mfd_client[i])
@@ -52,7 +55,7 @@ int intel_register_audio_clients(struct snd_sof_dev *sdev)
 	}
 	i++;
 
-	if (desc->audio_ops->num_hda_drv && i < sdev->sof_num_clients) {
+	if (chip->num_hda_drv && i < sdev->sof_num_clients) {
 		sdev->sof_mfd_client[i] =
 			sof_client_dev_register(sdev, "sof-hda-audio");
 		if (!sdev->sof_mfd_client[i])

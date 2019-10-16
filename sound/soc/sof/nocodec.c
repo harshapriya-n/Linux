@@ -81,7 +81,7 @@ int sof_nocodec_setup(struct device *dev,
 	sof_audio->tplg_filename = desc->nocodec_tplg_filename;
 
 	/* create dummy BE dai_links */
-	num_drv = audio_ops->num_ssp_drv + audio_ops->num_dmic_drv;
+	num_drv = audio_ops->num_nocodec_dailinks;
 	links = devm_kzalloc(dev, sizeof(struct snd_soc_dai_link) *
 			     num_drv, GFP_KERNEL);
 	if (!links)

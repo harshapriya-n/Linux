@@ -601,13 +601,14 @@ const struct snd_sof_audio_ops sof_bdw_audio_ops = {
 
 	/* DAI drivers */
 	.drv = bdw_dai,
-	.num_ssp_drv = ARRAY_SIZE(bdw_dai)
+	.num_nocodec_dailinks = ARRAY_SIZE(bdw_dai),
 };
 EXPORT_SYMBOL(sof_bdw_audio_ops);
 
 const struct sof_intel_dsp_desc bdw_chip_info = {
 	.cores_num = 1,
 	.cores_mask = 1,
+	.num_ssp_drv = ARRAY_SIZE(bdw_dai),
 };
 EXPORT_SYMBOL(bdw_chip_info);
 

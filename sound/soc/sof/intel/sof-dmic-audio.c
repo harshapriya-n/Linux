@@ -47,9 +47,10 @@ static int sof_audio_select_machine(struct platform_device *pdev,
 
 static int sof_dmic_audio_probe(struct platform_device *pdev)
 {
-	struct snd_sof_dev *sdev = dev_get_drvdata(pdev->dev.parent);
-	struct snd_sof_pdata *plat_data = sdev->pdata;
 	struct sof_mfd_client *audio_client = dev_get_platdata(&pdev->dev);
+	struct snd_sof_pdata *plat_data = sdev->pdata;
+	const struct sof_intel_dsp_desc *chip = get_chip_info(plat_data);
+	struct snd_sof_dev *sdev = dev_get_drvdata(pdev->dev.parent);
 	const struct sof_dev_desc *desc = plat_data->desc;
 	struct snd_soc_dai_driver *dai_drv;
 	struct sof_audio_dev *sof_audio;
@@ -93,9 +94,9 @@ static int sof_dmic_audio_probe(struct platform_device *pdev)
 	snd_sof_new_platform_drv(sof_audio);
 
 	/* now register audio DSP platform driver and dai */
-	dai_offset = sof_audio->audio_ops->num_ssp_drv;
+	dai_offset = chip->num_ssp_drv;
 	dai_drv = &sof_audio->audio_ops->drv[dai_offset];
-	num_drv = sof_audio->audio_ops->num_dmic_drv;
+	num_drv = chip->num_dmic_drv;
 	ret = devm_snd_soc_register_component(&pdev->dev, &sof_audio->plat_drv,
 					      dai_drv, num_drv);
 	if (ret < 0) {

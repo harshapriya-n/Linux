@@ -269,9 +269,7 @@ const struct snd_sof_audio_ops sof_cnl_audio_ops = {
 
 	/* DAI drivers */
 	.drv		= skl_dai,
-	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
-	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
-	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
+	.num_nocodec_dailinks = SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(sof_cnl_audio_ops);
 
@@ -291,6 +289,9 @@ const struct sof_intel_dsp_desc cnl_chip_info = {
 	.rom_init_timeout	= 300,
 	.ssp_count = CNL_SSP_COUNT,
 	.ssp_base_offset = CNL_SSP_BASE_OFFSET,
+	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
+	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
+	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(cnl_chip_info);
 
@@ -310,6 +311,9 @@ const struct sof_intel_dsp_desc icl_chip_info = {
 	.rom_init_timeout	= 300,
 	.ssp_count = ICL_SSP_COUNT,
 	.ssp_base_offset = CNL_SSP_BASE_OFFSET,
+	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
+	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
+	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(icl_chip_info);
 
@@ -326,6 +330,9 @@ const struct sof_intel_dsp_desc tgl_chip_info = {
 	.rom_init_timeout	= 300,
 	.ssp_count = ICL_SSP_COUNT,
 	.ssp_base_offset = CNL_SSP_BASE_OFFSET,
+	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
+	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
+	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(tgl_chip_info);
 
@@ -342,5 +349,8 @@ const struct sof_intel_dsp_desc ehl_chip_info = {
 	.rom_init_timeout	= 300,
 	.ssp_count = ICL_SSP_COUNT,
 	.ssp_base_offset = CNL_SSP_BASE_OFFSET,
+	.num_hda_drv	= SOF_SKL_NUM_HDA_DAIS,
+	.num_dmic_drv	= SOF_SKL_NUM_DMIC_DAIS,
+	.num_ssp_drv	= SOF_SKL_NUM_SSP_DAIS,
 };
 EXPORT_SYMBOL(ehl_chip_info);

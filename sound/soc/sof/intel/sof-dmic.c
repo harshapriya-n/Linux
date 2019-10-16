@@ -25,7 +25,8 @@ static struct snd_soc_card sof_dmic_card = {
 static int sof_dmic_bes_setup(struct device *dev,
 			      const struct snd_sof_audio_ops *audio_ops,
 			      struct snd_soc_dai_link *links,
-			      int link_num, struct snd_soc_card *card)
+			      int link_num, struct snd_soc_card *card,
+			      const struct sof_intel_dsp_desc *chip)
 {
 	struct snd_soc_dai_link_component *dlc;
 	int dai_drv_offset;
@@ -55,7 +56,7 @@ static int sof_dmic_bes_setup(struct device *dev,
 
 		links[i].id = i;
 		links[i].no_pcm = 1;
-		dai_drv_offset = i + audio_ops->num_ssp_drv;
+		dai_drv_offset = i + chip->num_ssp_drv;
 		links[i].cpus->dai_name = audio_ops->drv[dai_drv_offset].name;
 		links[i].platforms->name = dev_name(dev);
 		links[i].codecs->dai_name = "snd-soc-dummy-dai";
@@ -87,7 +88,8 @@ static int check_nhlt_dmic(struct device *dev)
 
 int sof_dmic_setup(struct device *dev,
 		   struct sof_audio_dev *sof_audio,
-		   struct snd_soc_acpi_mach *mach)
+		   struct snd_soc_acpi_mach *mach,
+		   const struct sof_intel_dsp_desc *chip)
 {
 	const struct snd_sof_audio_ops *audio_ops = sof_audio->audio_ops;
 	struct snd_soc_dai_link *links;
@@ -103,8 +105,6 @@ int sof_dmic_setup(struct device *dev,
 	mach->drv_name = "sof-dmic";
 
 	dmic_num = check_nhlt_dmic(dev);
-
-	dev_dbg(dev, "ranjani dmic num %d\n", dmic_num);
 
 	/* allow for module parameter override */
 	if (hda_dmic_num != -1)
@@ -128,14 +128,14 @@ int sof_dmic_setup(struct device *dev,
 						  dmic_str);
 
 	/* create dummy BE dai_links */
-	num_drv = audio_ops->num_dmic_drv;
+	num_drv = chip->num_dmic_drv;
 	links = devm_kzalloc(dev, sizeof(struct snd_soc_dai_link) *
 			     num_drv, GFP_KERNEL);
 	if (!links)
 		return -ENOMEM;
 
 	ret = sof_dmic_bes_setup(dev, audio_ops, links, num_drv,
-				 &sof_dmic_card);
+				 &sof_dmic_card, chip);
 	return ret;
 }
 EXPORT_SYMBOL(sof_dmic_setup);
