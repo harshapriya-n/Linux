@@ -576,7 +576,8 @@ void sof_hda_bus_init(struct hdac_bus *bus, struct device *dev);
 /*
  * HDA Codec operations.
  */
-int hda_codec_probe_bus(struct snd_sof_dev *sdev);
+int hda_codec_probe_bus(struct snd_sof_dev *sdev,
+			bool hda_codec_use_common_hdmi);
 void hda_codec_jack_wake_enable(struct snd_sof_dev *sdev);
 void hda_codec_jack_check(struct snd_sof_dev *sdev);
 
@@ -609,6 +610,9 @@ int hda_dsp_trace_trigger(struct snd_sof_dev *sdev, int cmd);
 
 /* common dai driver */
 extern struct snd_soc_dai_driver skl_dai[];
+
+/* Platform specific machine driver selection */
+struct snd_soc_sof_mach *hda_machine_driver_select(struct snd_sof_dev *sdev);
 
 /*
  * Platform Specific HW abstraction Ops.
