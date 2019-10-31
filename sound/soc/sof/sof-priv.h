@@ -505,4 +505,6 @@ int intel_pcm_open(struct snd_sof_dev *sdev,
 int intel_pcm_close(struct snd_sof_dev *sdev,
 		    struct snd_pcm_substream *substream);
 
+struct snd_sof_dev *snd_sof_get_sof_dev(struct device *dev);
+
 #endif
