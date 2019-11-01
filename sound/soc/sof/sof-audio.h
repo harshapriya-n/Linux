@@ -36,6 +36,9 @@ struct sof_audio_dev {
 	const char *platform;
 	const char *drv_name;
 
+	/* dma dev */
+	struct device *dma_dev;
+
 	/* machine */
 	struct snd_soc_sof_mach *machine;
 

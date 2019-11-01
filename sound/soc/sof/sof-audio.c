@@ -459,9 +459,7 @@ static int sof_audio_select_machine(struct platform_device *pdev,
 				    const struct sof_dev_desc *desc)
 {
 	struct sof_audio_dev *sof_audio = sof_get_client_data(&pdev->dev);
-#if !IS_ENABLED(CONFIG_SND_SOC_SOF_FORCE_NOCODEC_MODE)
 	struct snd_soc_acpi_mach *mach;
-#endif
 	struct snd_soc_sof_mach *sof_mach;
 	int ret;
 
@@ -635,6 +633,13 @@ static int sof_audio_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&sof_audio->route_list);
 
 	sof_audio->platform = dev_name(&pdev->dev);
+
+	/*
+	 * On some platforms such as Intel Ice Lake, DMA page buffer alloc
+	 * fails when the client platform device is used.
+	 * So, use SOF top-level device instead.
+	 */
+	sof_audio->dma_dev = pdev->dev.parent;
 
 	audio_client->client_data = sof_audio;
 
