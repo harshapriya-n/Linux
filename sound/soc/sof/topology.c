@@ -934,7 +934,6 @@ static int sof_control_load_volume(struct snd_soc_component *scomp,
 				   struct snd_kcontrol_new *kc,
 				   struct snd_soc_tplg_ctl_hdr *hdr)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct snd_soc_tplg_mixer_control *mc =
 		container_of(hdr, struct snd_soc_tplg_mixer_control, hdr);
 	struct sof_ipc_ctrl_data *cdata;
@@ -953,7 +952,7 @@ static int sof_control_load_volume(struct snd_soc_component *scomp,
 	if (!scontrol->control_data)
 		return -ENOMEM;
 
-	scontrol->comp_id = sdev->next_comp_id;
+	scontrol->comp_id = snd_sof_get_next_comp_id(scomp->dev);
 	scontrol->min_volume_step = le32_to_cpu(mc->min);
 	scontrol->max_volume_step = le32_to_cpu(mc->max);
 	scontrol->num_channels = le32_to_cpu(mc->num_channels);
@@ -1008,7 +1007,6 @@ static int sof_control_load_enum(struct snd_soc_component *scomp,
 				 struct snd_kcontrol_new *kc,
 				 struct snd_soc_tplg_ctl_hdr *hdr)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct snd_soc_tplg_enum_control *ec =
 		container_of(hdr, struct snd_soc_tplg_enum_control, hdr);
 
@@ -1023,7 +1021,7 @@ static int sof_control_load_enum(struct snd_soc_component *scomp,
 	if (!scontrol->control_data)
 		return -ENOMEM;
 
-	scontrol->comp_id = sdev->next_comp_id;
+	scontrol->comp_id = snd_sof_get_next_comp_id(scomp->dev);
 	scontrol->num_channels = le32_to_cpu(ec->num_channels);
 
 	scontrol->cmd = SOF_CTRL_CMD_ENUM;
@@ -1039,7 +1037,6 @@ static int sof_control_load_bytes(struct snd_soc_component *scomp,
 				  struct snd_kcontrol_new *kc,
 				  struct snd_soc_tplg_ctl_hdr *hdr)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct sof_ipc_ctrl_data *cdata;
 	struct snd_soc_tplg_bytes_control *control =
 		container_of(hdr, struct snd_soc_tplg_bytes_control, hdr);
@@ -1061,7 +1058,7 @@ static int sof_control_load_bytes(struct snd_soc_component *scomp,
 	if (!scontrol->control_data)
 		return -ENOMEM;
 
-	scontrol->comp_id = sdev->next_comp_id;
+	scontrol->comp_id = snd_sof_get_next_comp_id(scomp->dev);
 	scontrol->cmd = SOF_CTRL_CMD_BINARY;
 
 	dev_dbg(scomp->dev, "tplg: load kcontrol index %d chans %d\n",
@@ -1411,8 +1408,8 @@ int sof_load_pipeline_ipc(struct device *dev,
 			  struct sof_ipc_pipe_new *pipeline,
 			  struct sof_ipc_comp_reply *r)
 {
-	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc_pm_core_config pm_core_config;
+	u32 core_mask;
 	int ret;
 
 	ret = sof_client_tx_message(dev, pipeline->hdr.cmd, pipeline,
@@ -1423,7 +1420,7 @@ int sof_load_pipeline_ipc(struct device *dev,
 	}
 
 	/* power up the core that this pipeline is scheduled on */
-	ret = snd_sof_dsp_core_power_up(sdev, 1 << pipeline->core);
+	ret = snd_sof_client_core_power_up(dev, 1 << pipeline->core);
 	if (ret < 0) {
 		dev_err(dev, "error: powering up pipeline schedule core %d\n",
 			pipeline->core);
@@ -1431,14 +1428,16 @@ int sof_load_pipeline_ipc(struct device *dev,
 	}
 
 	/* update enabled cores mask */
-	sdev->enabled_cores_mask |= 1 << pipeline->core;
+	core_mask = snd_sof_dsp_get_enabled_cores_mask(dev);
+	core_mask |= 1 << pipeline->core;
+	snd_sof_dsp_set_enabled_cores_mask(dev, core_mask);
 
 	/*
 	 * Now notify DSP that the core that this pipeline is scheduled on
 	 * has been powered up
 	 */
 	memset(&pm_core_config, 0, sizeof(pm_core_config));
-	pm_core_config.enable_mask = sdev->enabled_cores_mask;
+	pm_core_config.enable_mask = core_mask;
 
 	/* configure CORE_ENABLE ipc message */
 	pm_core_config.hdr.size = sizeof(pm_core_config);
@@ -1614,7 +1613,6 @@ static int sof_widget_load_pga(struct snd_soc_component *scomp, int index,
 			       struct snd_soc_tplg_dapm_widget *tw,
 			       struct sof_ipc_comp_reply *r)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct sof_audio_dev *sof_audio = sof_get_client_data(scomp->dev);
 	struct snd_soc_tplg_private *private = &tw->priv;
 	struct sof_ipc_comp_volume *volume;
@@ -1878,7 +1876,6 @@ static int sof_process_load(struct snd_soc_component *scomp, int index,
 			    struct sof_ipc_comp_reply *r,
 			    int type)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct snd_soc_dapm_widget *widget = swidget->widget;
 	struct snd_soc_tplg_private *private = &tw->priv;
 	struct sof_ipc_comp_process *process = NULL;
@@ -2078,7 +2075,6 @@ static int sof_widget_ready(struct snd_soc_component *scomp, int index,
 			    struct snd_soc_dapm_widget *w,
 			    struct snd_soc_tplg_dapm_widget *tw)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct sof_audio_dev *sof_audio = sof_get_client_data(scomp->dev);
 	struct snd_sof_widget *swidget;
 	struct snd_sof_dai *dai;
@@ -2092,7 +2088,8 @@ static int sof_widget_ready(struct snd_soc_component *scomp, int index,
 
 	swidget->scomp = scomp;
 	swidget->widget = w;
-	swidget->comp_id = sdev->next_comp_id++;
+	swidget->comp_id = snd_sof_get_next_comp_id(scomp->dev);
+	snd_sof_inc_next_comp_id(scomp->dev);
 	swidget->complete = 0;
 	swidget->id = w->id;
 	swidget->pipeline_id = index;
@@ -2223,7 +2220,6 @@ static int sof_route_unload(struct snd_soc_component *scomp,
 static int sof_widget_unload(struct snd_soc_component *scomp,
 			     struct snd_soc_dobj *dobj)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	const struct snd_kcontrol_new *kc;
 	struct snd_soc_dapm_widget *widget;
 	struct sof_ipc_pipe_new *pipeline;
@@ -2233,6 +2229,7 @@ static int sof_widget_unload(struct snd_soc_component *scomp,
 	struct soc_bytes_ext *sbe;
 	struct snd_sof_dai *dai;
 	struct soc_enum *se;
+	u32 core_mask;
 	int ret = 0;
 	int i;
 
@@ -2257,13 +2254,16 @@ static int sof_widget_unload(struct snd_soc_component *scomp,
 
 		/* power down the pipeline schedule core */
 		pipeline = swidget->private;
-		ret = snd_sof_dsp_core_power_down(sdev, 1 << pipeline->core);
+		ret = snd_sof_client_core_power_down(scomp->dev,
+						     1 << pipeline->core);
 		if (ret < 0)
 			dev_err(scomp->dev, "error: powering down pipeline schedule core %d\n",
 				pipeline->core);
 
 		/* update enabled cores mask */
-		sdev->enabled_cores_mask &= ~(1 << pipeline->core);
+		core_mask = snd_sof_dsp_get_enabled_cores_mask(scomp->dev);
+		core_mask &= ~(1 << pipeline->core);
+		snd_sof_dsp_set_enabled_cores_mask(scomp->dev, core_mask);
 
 		break;
 	default:
@@ -2661,12 +2661,11 @@ static int sof_link_dmic_load(struct snd_soc_component *scomp, int index,
 			      struct snd_soc_tplg_hw_config *hw_config,
 			      struct sof_ipc_dai_config *config)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct sof_audio_dev *sof_audio = sof_get_client_data(scomp->dev);
 	struct snd_soc_tplg_private *private = &cfg->priv;
 	struct sof_ipc_dai_config *ipc_config;
 	struct sof_ipc_reply reply;
-	struct sof_ipc_fw_ready *ready = &sdev->fw_ready;
+	struct sof_ipc_fw_ready *ready = snd_sof_get_fw_ready(scomp->dev);
 	struct sof_ipc_fw_version *v = &ready->version;
 	u32 size;
 	int ret, j;
@@ -2791,7 +2790,6 @@ static int sof_link_hda_process(struct snd_soc_component *scomp,
 				struct snd_soc_dai_link *link,
 				struct sof_ipc_dai_config *config)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct sof_audio_dev *sof_audio = sof_get_client_data(scomp->dev);
 	struct sof_ipc_reply reply;
 	u32 size = sizeof(*config);
@@ -3107,7 +3105,6 @@ found:
 static int sof_route_load(struct snd_soc_component *scomp, int index,
 			  struct snd_soc_dapm_route *route)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct sof_audio_dev *sof_audio = sof_get_client_data(scomp->dev);
 	struct sof_ipc_pipe_comp_connect *connect;
 	struct snd_sof_widget *source_swidget, *sink_swidget;
