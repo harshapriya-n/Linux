@@ -26,6 +26,33 @@
 
 #define DMA_CHAN_INVALID	0xFFFFFFFF
 
+/* SOF audio device */
+struct sof_audio_dev {
+	const char *drv_name;
+	const char *tplg_filename;
+	const char *tplg_filename_prefix;
+
+	/* machine */
+	struct platform_device *pdev_mach;
+	const struct snd_soc_acpi_mach *machine;
+
+	/*
+	 * ASoC components. plat_drv fields are set dynamically so
+	 * can't use const
+	 */
+	struct snd_soc_component_driver plat_drv;
+
+	/* topology */
+	struct list_head pcm_list;
+	struct list_head kcontrol_list;
+	struct list_head widget_list;
+	struct list_head dai_list;
+	struct list_head route_list;
+	struct snd_soc_component *component;
+
+	void *private;
+};
+
 /* PCM stream, mapped to FW component  */
 struct snd_sof_pcm_stream {
 	u32 comp_id;
