@@ -366,7 +366,10 @@ int sof_machine_check(struct snd_sof_dev *sdev)
 	if (!mach)
 		return -ENOMEM;
 
-	ret = sof_nocodec_setup(dev, sof_pdata, mach, desc, desc->ops);
+	mach->drv_name = "sof-nocodec";
+	sof_pdata->tplg_filename = plat_data->desc->nocodec_tplg_filename;
+
+	ret = sof_nocodec_setup(dev, desc->ops);
 	if (ret < 0)
 		return ret;
 #else
@@ -397,7 +400,10 @@ int sof_machine_check(struct snd_sof_dev *sdev)
 	if (!mach)
 		return -ENOMEM;
 
-	ret = sof_nocodec_setup(dev, sof_pdata, mach, desc, desc->ops);
+	mach->drv_name = "sof-nocodec";
+	sof_pdata->tplg_filename = desc->nocodec_tplg_filename;
+
+	ret = sof_nocodec_setup(dev, desc->ops);
 	if (ret < 0)
 		return ret;
 
