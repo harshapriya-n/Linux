@@ -405,6 +405,8 @@ struct snd_sof_dev {
 	enum sof_d0_substate d0_substate;
 	/* flag to track if the intended power target of suspend is S0ix */
 	bool s0_suspend;
+	/* flag to indicate if a D0i3_compatible stream has ignored suspend */
+	bool d0i3_on_suspend;
 
 	/* DSP firmware boot */
 	wait_queue_head_t boot_wait;
@@ -552,8 +554,6 @@ struct snd_sof_pcm *snd_sof_find_spcm_dai(struct snd_sof_dev *sdev,
 
 	return NULL;
 }
-
-bool snd_sof_dsp_d0i3_on_suspend(struct snd_sof_dev *sdev);
 
 struct snd_sof_pcm *snd_sof_find_spcm_name(struct snd_sof_dev *sdev,
 					   const char *name);

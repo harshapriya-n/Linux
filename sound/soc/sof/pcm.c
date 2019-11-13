@@ -388,6 +388,12 @@ static int sof_pcm_trigger(struct snd_soc_component *component,
 			 * PM events.
 			 */
 			spcm->stream[substream->stream].suspend_ignored = true;
+
+			/*
+			 * set d0i3_on_suspend to indicate that a D0i3_compatible
+			 * pipeline is still running.
+			 */
+			sdev->d0i3_on_suspend = true;
 			return 0;
 		}
 		/* fallthrough */
