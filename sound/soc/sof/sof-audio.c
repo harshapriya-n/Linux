@@ -347,3 +347,98 @@ struct snd_sof_dai *snd_sof_find_dai(struct snd_soc_component *scomp,
 	return NULL;
 }
 
+/*
+ * SOF Driver enumeration.
+ */
+int sof_machine_check(struct snd_sof_dev *sdev)
+{
+	struct snd_sof_pdata *sof_pdata = sdev->pdata;
+	struct sof_dev_desc *desc = sof_pdata->desc;
+	struct snd_soc_acpi_mach *mach;
+
+	if (sof_pdata->machine)
+		return 0;
+
+#if IS_ENABLED(CONFIG_SND_SOC_SOF_FORCE_NOCODEC_MODE)
+	/* force nocodec mode */
+	dev_warn(dev, "Force to use nocodec mode\n");
+	mach = devm_kzalloc(dev, sizeof(*mach), GFP_KERNEL);
+	if (!mach)
+		return -ENOMEM;
+
+	ret = sof_nocodec_setup(dev, sof_pdata, mach, desc, desc->ops);
+	if (ret < 0)
+		return ret;
+#else
+	/* find machine */
+	mach = snd_soc_acpi_find_machine(desc->machines);
+	if (!mach) {
+		dev_warn(dev, "warning: No matching ASoC machine driver found\n");
+	} else {
+		mach->mach_params.acpi_ipc_irq_index = desc->irqindex_host_ipc;
+		sof_pdata->tplg_filename = mach->sof_tplg_filename;
+	}
+#endif /* CONFIG_SND_SOC_SOF_FORCE_NOCODEC_MODE */
+
+	if (mach) {
+		mach->mach_params.platform = dev_name(sdev->dev);
+		sof_pdata->machine = mach;
+		return 0;
+	}
+
+#if !IS_ENABLED(CONFIG_SND_SOC_SOF_NOCODEC)
+	dev_err(sdev->dev, "error: no matching ASoC machine driver found - aborting probe\n");
+	return -ENODEV;
+#else
+
+	/* fallback to nocodec mode */
+	dev_warn(sdev->dev, "No ASoC machine driver found - using nocodec\n");
+	mach = devm_kzalloc(sdev->dev, sizeof(*machine), GFP_KERNEL);
+	if (!mach)
+		return -ENOMEM;
+
+	ret = sof_nocodec_setup(dev, sof_pdata, mach, desc, desc->ops);
+	if (ret < 0)
+		return ret;
+
+	mach->mach_params.platform = dev_name(sdev->dev);
+	sof_pdata->machine = machine;
+
+	return 0;
+#endif
+}
+EXPORT_SYMBOL(sof_machine_check);
+
+int sof_machine_register(struct snd_sof_dev *sdev, void *pdata)
+{
+	struct snd_sof_pdata *plat_data = (struct snd_sof_pdata *)pdata;
+	const char *drv_name;
+	const void *mach;
+	int size;
+
+	drv_name = plat_data->machine->drv_name;
+	mach = (const void *)plat_data->machine;
+	size = sizeof(*plat_data->machine);
+
+	/* register machine driver, pass machine info as pdata */
+	plat_data->pdev_mach =
+		platform_device_register_data(sdev->dev, drv_name,
+					      PLATFORM_DEVID_NONE, mach, size);
+	if (IS_ERR(plat_data->pdev_mach))
+		return PTR_ERR(plat_data->pdev_mach);
+
+	dev_dbg(sdev->dev, "created machine %s\n",
+		dev_name(&plat_data->pdev_mach->dev));
+
+	return 0;
+}
+EXPORT_SYMBOL(sof_machine_register);
+
+void sof_machine_unregister(struct snd_sof_dev *sdev, void *pdata)
+{
+	struct snd_sof_pdata *plat_data = (struct snd_sof_pdata *)pdata;
+
+	if (!IS_ERR_OR_NULL(plat_data->pdev_mach))
+		platform_device_unregister(plat_data->pdev_mach);
+}
+EXPORT_SYMBOL(sof_machine_unregister);

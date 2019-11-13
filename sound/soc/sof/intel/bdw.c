@@ -17,6 +17,7 @@
 #include <sound/sof/xtensa.h>
 #include "../ops.h"
 #include "shim.h"
+#include "../sof-audio.h"
 
 /* BARs */
 #define BDW_DSP_BAR 0

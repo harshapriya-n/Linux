@@ -17,6 +17,7 @@
 
 #include "../sof-priv.h"
 #include "hda.h"
+#include "../sof-audio.h"
 
 static const struct snd_sof_debugfs_map apl_dsp_debugfs[] = {
 	{"hda", HDA_DSP_HDA_BAR, 0, 0x4000, SOF_DEBUGFS_ACCESS_ALWAYS},

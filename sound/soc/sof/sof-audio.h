@@ -229,4 +229,9 @@ int snd_sof_ipc_set_get_comp_data(struct snd_sof_control *scontrol,
 /* PM */
 int sof_restore_pipelines(struct device *dev);
 int sof_set_hw_params_upon_resume(struct device *dev);
+
+/* Machine driver enumeration */
+int sof_machine_register(struct snd_sof_dev *sdev, void *pdata);
+void sof_machine_unregister(struct snd_sof_dev *sdev, void *pdata);
+int sof_machine_check(struct snd_sof_dev *sdev);
 #endif

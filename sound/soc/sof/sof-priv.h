@@ -414,10 +414,6 @@ int snd_sof_create_page_table(struct snd_sof_dev *sdev,
 			      struct snd_dma_buffer *dmab,
 			      unsigned char *page_table, size_t size);
 
-int sof_machine_register(struct snd_sof_dev *sdev, void *pdata);
-void sof_machine_unregister(struct snd_sof_dev *sdev, void *pdata);
-int sof_machine_check(struct snd_sof_dev *sdev);
-
 /*
  * Firmware loading.
  */
