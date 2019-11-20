@@ -59,6 +59,51 @@ static int sof_restore_kcontrols(struct snd_sof_dev *sdev)
 	return 0;
 }
 
+static int sof_destroy_pipelines(struct snd_sof_dev *sdev)
+{
+	struct snd_sof_widget *swidget;
+	struct sof_ipc_free ipc_free;
+	struct sof_ipc_reply reply;
+	int ret = 0;
+
+	list_for_each_entry_reverse(swidget, &sdev->widget_list, list) {
+		memset(&ipc_free, 0, sizeof(ipc_free));
+
+		/* skip if there is no private data */
+		if (!swidget->private)
+			continue;
+
+		/* configure ipc free message */
+		ipc_free.hdr.size = sizeof(ipc_free);
+		ipc_free.hdr.cmd = SOF_IPC_GLB_TPLG_MSG;
+		ipc_free.id = swidget->comp_id;
+
+		switch (swidget->id) {
+		case snd_soc_dapm_scheduler:
+			ipc_free.hdr.cmd |= SOF_IPC_TPLG_PIPE_FREE;
+			break;
+		case snd_soc_dapm_buffer:
+			ipc_free.hdr.cmd |= SOF_IPC_TPLG_BUFFER_FREE;
+			break;
+		default:
+			ipc_free.hdr.cmd |= SOF_IPC_TPLG_COMP_FREE;
+			break;
+		}
+		ret = sof_ipc_tx_message(sdev->ipc, ipc_free.hdr.cmd,
+					 &ipc_free, sizeof(ipc_free), &reply,
+					 sizeof(reply));
+		if (ret < 0) {
+			dev_err(sdev->dev,
+				"error: failed to free widget type %d with ID: %d\n",
+				swidget->widget->id, swidget->comp_id);
+
+			return ret;
+		}
+	}
+
+	return ret;
+}
+
 static int sof_restore_pipelines(struct snd_sof_dev *sdev)
 {
 	struct snd_sof_widget *swidget;
@@ -266,7 +311,10 @@ static int sof_resume(struct device *dev, bool runtime_resume)
 	int ret;
 
 	/* do nothing if dsp resume callbacks are not set */
-	if (!sof_ops(sdev)->resume || !sof_ops(sdev)->runtime_resume)
+	if (!runtime_resume && !sof_ops(sdev)->resume)
+		return 0;
+
+	if (runtime_resume && !sof_ops(sdev)->runtime_resume)
 		return 0;
 
 	/*
@@ -338,8 +386,14 @@ static int sof_suspend(struct device *dev, bool runtime_suspend)
 	int ret;
 
 	/* do nothing if dsp suspend callback is not set */
-	if (!sof_ops(sdev)->suspend)
+	if (!runtime_suspend && !sof_ops(sdev)->suspend)
 		return 0;
+
+	if (runtime_suspend && !sof_ops(sdev)->runtime_suspend)
+		return 0;
+
+	/* destroy pipelines */
+	sof_destroy_pipelines(sdev);
 
 	/* release trace */
 	snd_sof_release_trace(sdev);
@@ -393,6 +447,7 @@ static int sof_suspend(struct device *dev, bool runtime_suspend)
 
 int snd_sof_runtime_suspend(struct device *dev)
 {
+	dev_dbg(dev, "ranjani: SOF runtime suspend\n");
 	return sof_suspend(dev, true);
 }
 EXPORT_SYMBOL(snd_sof_runtime_suspend);

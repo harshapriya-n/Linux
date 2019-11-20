@@ -384,17 +384,42 @@ static int byt_reset(struct snd_sof_dev *sdev)
 
 static int byt_remove(struct snd_sof_dev *sdev)
 {
-	/* put DSP into reset, set reset vector and stall */
-	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_CSR,
-				  SHIM_BYT_CSR_RST | SHIM_BYT_CSR_VECTOR_SEL |
-				  SHIM_BYT_CSR_STALL,
-				  SHIM_BYT_CSR_RST | SHIM_BYT_CSR_VECTOR_SEL |
-				  SHIM_BYT_CSR_STALL);
-
 	/* disable Interrupt from both sides */
 	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_IMRX, 0x3, 0x3);
 	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_IMRD, 0x3, 0x3);
 
+	/* put DSP into reset, set reset vector */
+	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_CSR,
+				  SHIM_BYT_CSR_RST | SHIM_BYT_CSR_VECTOR_SEL,
+				  SHIM_BYT_CSR_RST | SHIM_BYT_CSR_VECTOR_SEL);
+
+	dev_dbg(sdev->dev, "ranjani: %s\n", __func__);
+
+	return 0;
+}
+
+static int byt_suspend(struct snd_sof_dev *sdev)
+{
+	/* disable Interrupt from both sides */
+	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_IMRX, 0x3, 0x3);
+	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_IMRD, 0x3, 0x3);
+
+	/* put DSP into reset, set reset vector */
+	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_CSR,
+				  SHIM_BYT_CSR_RST | SHIM_BYT_CSR_VECTOR_SEL,
+				  SHIM_BYT_CSR_RST | SHIM_BYT_CSR_VECTOR_SEL);
+
+	dev_dbg(sdev->dev, "ranjani: %s\n", __func__);
+	return 0;
+}
+
+static int byt_resume(struct snd_sof_dev *sdev)
+{
+	/* enable Interrupt from both sides */
+	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_IMRX, 0x3, 0x0);
+	snd_sof_dsp_update_bits64(sdev, BYT_DSP_BAR, SHIM_IMRD, 0x3, 0x0);
+
+	dev_dbg(sdev->dev, "ranjani: %s\n", __func__);
 	return 0;
 }
 
@@ -714,6 +739,12 @@ const struct snd_sof_dsp_ops sof_byt_ops = {
 	/*Firmware loading */
 	.load_firmware	= snd_sof_load_firmware_memcpy,
 
+	/* PM */
+	.suspend = byt_suspend,
+	.resume = byt_resume,
+	.runtime_suspend = byt_suspend,
+	.runtime_resume = byt_resume,
+
 	/* DAI drivers */
 	.drv = byt_dai,
 	.num_drv = 3, /* we have only 3 SSPs on byt*/
@@ -780,6 +811,12 @@ const struct snd_sof_dsp_ops sof_cht_ops = {
 
 	/*Firmware loading */
 	.load_firmware	= snd_sof_load_firmware_memcpy,
+
+	/* PM */
+	.suspend = byt_suspend,
+	.resume = byt_resume,
+	.runtime_suspend = byt_suspend,
+	.runtime_resume = byt_resume,
 
 	/* DAI drivers */
 	.drv = byt_dai,

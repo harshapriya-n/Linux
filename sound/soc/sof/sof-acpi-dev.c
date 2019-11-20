@@ -133,7 +133,12 @@ static void sof_acpi_probe_complete(struct device *dev)
 	/* allow runtime_pm */
 	pm_runtime_set_autosuspend_delay(dev, SND_SOF_SUSPEND_DELAY_MS);
 	pm_runtime_use_autosuspend(dev);
+	pm_runtime_set_active(dev);
 	pm_runtime_enable(dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put_noidle(dev);
+
+	dev_dbg(dev, "ranjani: %s\n", __func__);
 }
 
 static int sof_acpi_probe(struct platform_device *pdev)
@@ -230,8 +235,12 @@ static int sof_acpi_probe(struct platform_device *pdev)
 
 static int sof_acpi_remove(struct platform_device *pdev)
 {
+	pm_runtime_get_noresume(&pdev->dev);
+
 	if (!(sof_acpi_debug & SOF_ACPI_DISABLE_PM_RUNTIME))
 		pm_runtime_disable(&pdev->dev);
+
+	dev_dbg(&pdev->dev, "ranjani calling snd_sof_device_remove\n");
 
 	/* call sof helper for DSP hardware remove */
 	snd_sof_device_remove(&pdev->dev);
