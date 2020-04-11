@@ -60,22 +60,6 @@ static void virtbus_shutdown(struct device *dev)
 	dev->driver->shutdown(dev);
 }
 
-static int virtbus_suspend(struct device *dev, pm_message_t state)
-{
-	if (dev->driver->suspend)
-		return dev->driver->suspend(dev, state);
-
-	return 0;
-}
-
-static int virtbus_resume(struct device *dev)
-{
-	if (dev->driver->resume)
-		return dev->driver->resume(dev);
-
-	return 0;
-}
-
 static int virtbus_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
 	struct virtbus_device *vdev = to_virtbus_dev(dev);
@@ -86,15 +70,22 @@ static int virtbus_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
+static const struct dev_pm_ops virtbus_dev_pm_ops = {
+	SET_RUNTIME_PM_OPS(pm_generic_runtime_suspend,
+			   pm_generic_runtime_resume, NULL)
+#ifdef CONFIG_PM_SLEEP
+	SET_SYSTEM_SLEEP_PM_OPS(pm_generic_suspend, pm_generic_resume)
+#endif
+};
+
 struct bus_type virtual_bus_type = {
 	.name = "virtbus",
 	.match = virtbus_match,
 	.probe = virtbus_probe,
 	.remove = virtbus_remove,
-	.shutdown = virtbus_shutdown,
-	.suspend = virtbus_suspend,
 	.resume = virtbus_resume,
 	.uevent = virtbus_uevent,
+	.pm = &virtbus_dev_pm_ops,
 };
 
 /**
@@ -212,28 +203,6 @@ static void virtbus_shutdown_driver(struct device *_dev)
 	vdrv->shutdown(vdev);
 }
 
-static int virtbus_suspend_driver(struct device *_dev, pm_message_t state)
-{
-	struct virtbus_driver *vdrv = to_virtbus_drv(_dev->driver);
-	struct virtbus_device *vdev = to_virtbus_dev(_dev);
-
-	if (vdrv->suspend)
-		return vdrv->suspend(vdev, state);
-
-	return 0;
-}
-
-static int virtbus_resume_driver(struct device *_dev)
-{
-	struct virtbus_driver *vdrv = to_virtbus_drv(_dev->driver);
-	struct virtbus_device *vdev = to_virtbus_dev(_dev);
-
-	if (vdrv->resume)
-		return vdrv->resume(vdev);
-
-	return 0;
-}
-
 /**
  * __virtbus_register_driver - register a driver for virtual bus devices
  * @vdrv: virtbus_driver structure
@@ -249,8 +218,6 @@ int __virtbus_register_driver(struct virtbus_driver *vdrv, struct module *owner)
 	vdrv->driver.probe = virtbus_probe_driver;
 	vdrv->driver.remove = virtbus_remove_driver;
 	vdrv->driver.shutdown = virtbus_shutdown_driver;
-	vdrv->driver.suspend = virtbus_suspend_driver;
-	vdrv->driver.resume = virtbus_resume_driver;
 
 	return driver_register(&vdrv->driver);
 }
