@@ -45,21 +45,6 @@ static int virtbus_match(struct device *dev, struct device_driver *drv)
 	return virtbus_match_id(vdrv->id_table, vdev) != NULL;
 }
 
-static int virtbus_probe(struct device *dev)
-{
-	return dev->driver->probe(dev);
-}
-
-static int virtbus_remove(struct device *dev)
-{
-	return dev->driver->remove(dev);
-}
-
-static void virtbus_shutdown(struct device *dev)
-{
-	dev->driver->shutdown(dev);
-}
-
 static int virtbus_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
 	struct virtbus_device *vdev = to_virtbus_dev(dev);
@@ -81,9 +66,6 @@ static const struct dev_pm_ops virtbus_dev_pm_ops = {
 struct bus_type virtual_bus_type = {
 	.name = "virtbus",
 	.match = virtbus_match,
-	.probe = virtbus_probe,
-	.remove = virtbus_remove,
-	.resume = virtbus_resume,
 	.uevent = virtbus_uevent,
 	.pm = &virtbus_dev_pm_ops,
 };
