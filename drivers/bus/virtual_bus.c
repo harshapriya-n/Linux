@@ -27,8 +27,8 @@ static DEFINE_IDA(virtbus_dev_ida);
 #define VIRTBUS_INVALID_ID	0xFFFFFFFF
 
 static const
-struct virtbus_dev_id *virtbus_match_id(const struct virtbus_dev_id *id,
-					struct virtbus_device *vdev)
+struct virtbus_device_id *virtbus_match_id(const struct virtbus_device_id *id,
+					   struct virtbus_device *vdev)
 {
 	while (id->name[0]) {
 		if (!strcmp(vdev->match_name, id->name))
@@ -50,7 +50,8 @@ static int virtbus_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
 	struct virtbus_device *vdev = to_virtbus_dev(dev);
 
-	if (add_uevent_var(env, "MODALIAS=%s%s", "virtbus:", vdev->match_name))
+	if (add_uevent_var(env, "MODALIAS=%s%s", VIRTBUS_MODULE_PREFIX,
+			   vdev->match_name))
 		return -ENOMEM;
 
 	return 0;

@@ -26,7 +26,7 @@ struct virtbus_driver {
 	int (*suspend)(struct virtbus_device *, pm_message_t);
 	int (*resume)(struct virtbus_device *);
 	struct device_driver driver;
-	const struct virtbus_dev_id *id_table;
+	const struct virtbus_device_id *id_table;
 };
 
 static inline
