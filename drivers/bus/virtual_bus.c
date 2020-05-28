@@ -18,11 +18,6 @@
 #include <linux/acpi.h>
 #include <linux/device.h>
 
-MODULE_LICENSE("GPL v2");
-MODULE_DESCRIPTION("Virtual Bus");
-MODULE_AUTHOR("David Ertman <david.m.ertman@intel.com>");
-MODULE_AUTHOR("Kiran Patil <kiran.patil@intel.com>");
-
 static DEFINE_IDA(virtbus_dev_ida);
 #define VIRTBUS_INVALID_ID	0xFFFFFFFF
 
@@ -214,3 +209,8 @@ static void __exit virtual_bus_exit(void)
 
 module_init(virtual_bus_init);
 module_exit(virtual_bus_exit);
+
+MODULE_LICENSE("GPL v2");
+MODULE_DESCRIPTION("Virtual Bus");
+MODULE_AUTHOR("David Ertman <david.m.ertman@intel.com>");
+MODULE_AUTHOR("Kiran Patil <kiran.patil@intel.com>");
