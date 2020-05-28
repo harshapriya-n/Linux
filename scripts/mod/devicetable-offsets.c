@@ -241,8 +241,8 @@ int main(void)
 	DEVID(mhi_device_id);
 	DEVID_FIELD(mhi_device_id, chan);
 
-	DEVID(virtbus_device_id);
-	DEVID_FIELD(virtbus_device_id, name);
+	DEVID(virtualbus_device_id);
+	DEVID_FIELD(virtualbus_device_id, name);
 
 	return 0;
 }
