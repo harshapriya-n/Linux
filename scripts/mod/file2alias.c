@@ -1361,6 +1361,7 @@ static int do_mhi_entry(const char *filename, void *symval, char *alias)
 	return 1;
 }
 
+/* Looks like: virtbus:S */
 static int do_virtbus_entry(const char *filename, void *symval, char *alias)
 {
 	DEF_FIELD_ADDR(symval, virtbus_device_id, name);
