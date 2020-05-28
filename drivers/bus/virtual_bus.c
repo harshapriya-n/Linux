@@ -37,7 +37,7 @@ static int virtbus_match(struct device *dev, struct device_driver *drv)
 	struct virtbus_driver *vdrv = to_virtbus_drv(drv);
 	struct virtbus_device *vdev = to_virtbus_dev(dev);
 
-	return virtbus_match_id(vdrv->id_table, vdev) != NULL;
+	return !!virtbus_match_id(vdrv->id_table, vdev);
 }
 
 static int virtbus_uevent(struct device *dev, struct kobj_uevent_env *env)
