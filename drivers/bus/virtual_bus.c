@@ -153,7 +153,7 @@ static int virtbus_remove_driver(struct device *_dev)
 {
 	struct virtbus_driver *vdrv = to_virtbus_drv(_dev->driver);
 	struct virtbus_device *vdev = to_virtbus_dev(_dev);
-	int ret = 0;
+	int ret;
 
 	ret = vdrv->remove(vdev);
 	dev_pm_domain_detach(_dev, true);
