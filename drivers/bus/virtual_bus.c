@@ -54,9 +54,7 @@ static int virtbus_uevent(struct device *dev, struct kobj_uevent_env *env)
 static const struct dev_pm_ops virtbus_dev_pm_ops = {
 	SET_RUNTIME_PM_OPS(pm_generic_runtime_suspend,
 			   pm_generic_runtime_resume, NULL)
-#ifdef CONFIG_PM_SLEEP
 	SET_SYSTEM_SLEEP_PM_OPS(pm_generic_suspend, pm_generic_resume)
-#endif
 };
 
 struct bus_type virtual_bus_type = {
