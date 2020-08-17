@@ -85,6 +85,12 @@ static int sof_widget_setup(struct snd_sof_dev *sdev, struct snd_sof_widget *swi
 	size_t ipc_size;
 	int ret;
 
+	/* widget set up already? */
+	if (swidget->ref_count > 0)
+		return 0;
+
+	swidget->ref_count++;
+
 	/* skip if there is no private data */
 	if (!swidget->private)
 		return 0;
@@ -130,11 +136,84 @@ static int sof_widget_setup(struct snd_sof_dev *sdev, struct snd_sof_widget *swi
 	return ret;
 }
 
+static int sof_route_set_up(struct snd_sof_dev *sdev, struct snd_sof_widget *wsource,
+			    struct snd_sof_widget *wsink)
+{
+	struct sof_ipc_pipe_comp_connect connect;
+	struct sof_ipc_reply reply;
+	int ret;
+
+	connect.hdr.size = sizeof(connect);
+	connect.hdr.cmd = SOF_IPC_GLB_TPLG_MSG | SOF_IPC_TPLG_COMP_CONNECT;
+	connect.source_id = wsource->comp_id;
+	connect.sink_id = wsink->comp_id;
+
+	/* send ipc */
+	ret = sof_ipc_tx_message(sdev->ipc, connect.hdr.cmd, &connect, sizeof(connect),
+				 &reply, sizeof(reply));
+	if (ret < 0)
+		dev_err(sdev->dev, "error: failed to load route source %s -> %s sink\n",
+			wsource->widget->name, wsink->widget->name);
+
+	return ret;
+}
+
+int sof_pcm_pipeline_set_up(struct snd_soc_component *scomp, struct snd_sof_pcm *spcm, int dir)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_route_list *route_list = spcm->stream[dir].route_list;
+	struct snd_sof_widget *pipeline_widget = route_list->pipeline_widget;
+	int ret, i;
+
+	if (!route_list)
+		return -ENOENT;
+
+	/* set up widgets and routes as we walk the list */
+	for (i = 0; i < route_list->num_widgets; i++) {
+		struct snd_sof_widget *swidget = route_list->widgets[i];
+
+		ret = sof_widget_setup(sdev, swidget);
+		if (ret < 0)
+			return ret;
+
+		/* set up the route with the previous widget */
+		if (i > 0) {
+			struct snd_sof_widget *wsink, *wsource;
+
+			if (dir == SNDRV_PCM_STREAM_PLAYBACK) {
+				wsink = swidget;
+				wsource = route_list->widgets[i - 1];
+			} else {
+				wsource = swidget;
+				wsink = route_list->widgets[i - 1];
+			}
+
+			ret = sof_route_set_up(sdev, wsource, wsink);
+			if (ret < 0)
+				return ret;
+		}
+	}
+
+	/* set up pipeline widget */
+	ret = sof_widget_setup(sdev, pipeline_widget);
+	if (ret < 0)
+		return ret;
+
+	/* complete pipeline */
+	pipeline_widget->complete = snd_sof_complete_pipeline(sdev->dev, pipeline_widget);
+}
+
 static int sof_widget_free(struct snd_sof_dev *sdev, struct snd_sof_widget *swidget)
 {
 	struct sof_ipc_free ipc_free;
 	struct sof_ipc_reply reply;
 	int ret;
+
+	/* free the widget only when the last pipeline it is part of has been stopped */
+	if (swidget->ref_count > 1)
+		return 0;
+
+	swidget->ref_count--;
 
 	/* skip if there is no private data */
 	if (!swidget->private)
@@ -165,6 +244,31 @@ static int sof_widget_free(struct snd_sof_dev *sdev, struct snd_sof_widget *swid
 		dev_err(sdev->dev, "error: failed to free widget %d\n", swidget->comp_id);
 
 	return ret;
+}
+
+int sof_pcm_pipeline_destroy(struct snd_soc_component *scomp, struct snd_sof_pcm *spcm, int dir)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_route_list *route_list = spcm->stream[dir].route_list;
+	struct snd_sof_widget *pipeline_widget = route_list->pipeline_widget;
+	int ret, i;
+
+	if (!route_list)
+		return -ENOENT;
+
+	/* remove pipeline widget */
+	ret = sof_widget_free(sdev, pipeline_widget);
+	if (ret < 0)
+		return ret;
+
+	/* remove all widgets in the route */
+	for (i = 0; i < route_list->num_widgets; i++) {
+		struct snd_sof_widget *swidget = route_list->widgets[i];
+
+		ret = sof_widget_free(sdev, swidget);
+		if (ret < 0)
+			return ret;
+	}
 }
 
 /*

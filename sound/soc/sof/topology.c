@@ -2537,6 +2537,9 @@ static int sof_widget_ready(struct snd_soc_component *scomp, int index,
 		}
 	}
 
+	/* increment ref_count for widget after setup */
+	swidget->ref_count++;
+
 	w->dobj.private = swidget;
 	list_add(&swidget->list, &sdev->widget_list);
 	return ret;

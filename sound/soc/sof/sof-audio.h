@@ -93,6 +93,11 @@ struct snd_sof_widget {
 	int complete;
 	int core;
 	int id;
+	/*
+	 * Widgets could be part of multiple pipeilnes. ref_count would be incremented when
+	 * each pipeline is started
+	 */
+	int ref_count;
 
 	struct snd_soc_dapm_widget *widget;
 	struct list_head list;	/* list in sdev widget list */
@@ -234,5 +239,7 @@ void sof_machine_unregister(struct snd_sof_dev *sdev, void *pdata);
 
 /* PCM */
 int sof_pcm_route_set_up_all(struct snd_soc_component *scomp);
+int sof_pcm_pipeline_set_up(struct snd_soc_component *scomp, struct snd_sof_pcm *spcm, int dir);
+int sof_pcm_pipeline_destroy(struct snd_soc_component *scomp, struct snd_sof_pcm *spcm, int dir);
 
 #endif
