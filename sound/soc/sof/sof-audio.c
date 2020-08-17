@@ -11,6 +11,63 @@
 #include "sof-audio.h"
 #include "ops.h"
 
+static int sof_widget_free(struct snd_sof_dev *sdev, struct snd_sof_widget *swidget)
+{
+	struct sof_ipc_free ipc_free;
+	struct sof_ipc_reply reply;
+	int ret;
+
+	/* skip if there is no private data */
+	if (!swidget->private)
+		return 0;
+
+	memset(&ipc_free, 0, sizeof(ipc_free));
+
+	/* configure ipc free message */
+	ipc_free.hdr.size = sizeof(ipc_free);
+	ipc_free.hdr.cmd = SOF_IPC_GLB_TPLG_MSG;
+	ipc_free.id = swidget->comp_id;
+
+	switch (swidget->id) {
+	case snd_soc_dapm_scheduler:
+		ipc_free.hdr.cmd |= SOF_IPC_TPLG_PIPE_FREE;
+		break;
+	case snd_soc_dapm_buffer:
+		ipc_free.hdr.cmd |= SOF_IPC_TPLG_BUFFER_FREE;
+		break;
+	default:
+		ipc_free.hdr.cmd |= SOF_IPC_TPLG_COMP_FREE;
+		break;
+	}
+
+	ret = sof_ipc_tx_message(sdev->ipc, ipc_free.hdr.cmd, &ipc_free, sizeof(ipc_free),
+				 &reply, sizeof(reply));
+	if (ret < 0)
+		dev_err(sdev->dev, "error: failed to free widget %d\n", swidget->comp_id);
+
+	return ret;
+}
+
+/*
+ * Free all widgets and pipelines. This should be called after topology parsing is complete
+ * to facilitate dynamic pipeline loading/unloading during PCM open/close.
+ */
+int sof_pipelines_destroy_all(struct snd_soc_component *scomp)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_widget *swidget;
+	int ret;
+
+	/* free all widgets */
+	list_for_each_entry_reverse(swidget, &sdev->widget_list, list) {
+		ret = sof_widget_free(sdev, swidget);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
+}
+
 static int sof_expand_route_list(struct snd_sof_pcm *spcm, int dir,
 				 struct snd_sof_widget *next_widget, int num_widgets)
 {
