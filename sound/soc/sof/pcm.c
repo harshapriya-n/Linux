@@ -779,6 +779,15 @@ static int sof_pcm_probe(struct snd_soc_component *component)
 
 static void sof_pcm_remove(struct snd_soc_component *component)
 {
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct snd_sof_pcm *spcm;
+	int dir;
+
+	/* remove route list for all PCM streams */
+	list_for_each_entry(spcm, &sdev->pcm_list, list)
+		for_each_pcm_streams(dir)
+			kfree(spcm->stream[dir].route_list);
+
 	/* remove topology */
 	snd_soc_tplg_component_remove(component, SND_SOC_TPLG_INDEX_ALL);
 }

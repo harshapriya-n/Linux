@@ -28,6 +28,12 @@
 
 #define DMA_CHAN_INVALID	0xFFFFFFFF
 
+struct snd_sof_route_list {
+	int num_widgets;
+	struct snd_sof_widget *pipeline_widget;
+	struct snd_sof_widget *widgets[];
+};
+
 /* PCM stream, mapped to FW component  */
 struct snd_sof_pcm_stream {
 	u32 comp_id;
@@ -41,6 +47,8 @@ struct snd_sof_pcm_stream {
 	 * active or not while suspending the stream
 	 */
 	bool suspend_ignored;
+
+	struct snd_sof_route_list *route_list;
 };
 
 /* ALSA SOF PCM device */
@@ -172,6 +180,9 @@ snd_sof_find_swidget_sname(struct snd_soc_component *scomp,
 			   const char *pcm_name, int dir);
 struct snd_sof_dai *snd_sof_find_dai(struct snd_soc_component *scomp,
 				     const char *name);
+struct snd_sof_widget *snd_sof_find_swidget_by_name(struct snd_soc_component *scomp,
+						    const char *name);
+struct snd_sof_widget *snd_sof_find_swidget_by_id(struct snd_soc_component *scomp, int id);
 
 static inline
 struct snd_sof_pcm *snd_sof_find_spcm_dai(struct snd_soc_component *scomp,
@@ -219,5 +230,8 @@ bool snd_sof_dsp_only_d0i3_compatible_stream_active(struct snd_sof_dev *sdev);
 /* Machine driver enumeration */
 int sof_machine_register(struct snd_sof_dev *sdev, void *pdata);
 void sof_machine_unregister(struct snd_sof_dev *sdev, void *pdata);
+
+/* PCM */
+int sof_pcm_route_set_up_all(struct snd_soc_component *scomp);
 
 #endif

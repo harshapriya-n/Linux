@@ -3608,6 +3608,7 @@ static void sof_complete(struct snd_soc_component *scomp)
 {
 	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct snd_sof_widget *swidget;
+	int ret;
 
 	/* some widget types require completion notificattion */
 	list_for_each_entry(swidget, &sdev->widget_list, list) {
@@ -3628,6 +3629,15 @@ static void sof_complete(struct snd_soc_component *scomp)
 	 * IPC. It may be overwritten by alsa-mixer after booting up
 	 */
 	snd_sof_cache_kcontrol_val(scomp);
+
+	/*
+	 * Set up routes for all PCM streams. This step is required to identify the widgets
+	 * and their connections for each PCM stream and save them. This information will be
+	 * used when pipelines are set up/taken down dynamically during PCM open/close.
+	 */
+	ret = sof_pcm_route_set_up_all(scomp);
+	if (ret < 0)
+		dev_warn(scomp->dev, "failed to set up route for all PCM streams\n");
 }
 
 /* manifest - optional to inform component of manifest */

@@ -11,6 +11,139 @@
 #include "sof-audio.h"
 #include "ops.h"
 
+static int sof_expand_route_list(struct snd_sof_pcm *spcm, int dir,
+				 struct snd_sof_widget *next_widget, int num_widgets)
+{
+	struct snd_sof_route_list **route_list = &spcm->stream[dir].route_list;
+	struct snd_sof_route_list *new_list;
+
+	new_list = krealloc(*route_list, struct_size(new_list, widgets, num_widgets), GFP_KERNEL);
+	if (!new_list)
+		return -ENOMEM;
+
+	new_list->num_widgets = num_widgets;
+	new_list->widgets[num_widgets - 1] = next_widget;
+	*route_list = new_list;
+	return 0;
+}
+
+static int sof_route_add_connected_widgets(struct snd_soc_component *scomp,
+					   struct snd_sof_pcm *spcm,
+					   struct snd_sof_widget *host_widget, int dir)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_route_list **route_list = &spcm->stream[dir].route_list;
+	struct snd_sof_widget *next_widget = host_widget;
+	struct snd_sof_widget *swidget;
+	struct snd_sof_route *sroute;
+	const char *route_endpoint, *next_widget_name;
+	bool found_next_widget;
+	int ret;
+
+	/* allocate memory for route_list */
+	*route_list = kzalloc(struct_size(*route_list, widgets, 1), GFP_KERNEL);
+	if (!(*route_list))
+		return -ENOMEM;
+
+	/* init route_list */
+	(*route_list)->widgets[0] = host_widget;
+	(*route_list)->num_widgets = 1;
+
+	/* set pipeline widget */
+	list_for_each_entry(swidget, &sdev->widget_list, list)
+		if (swidget->id == snd_soc_dapm_scheduler) {
+			const struct sof_ipc_pipe_new *pipeline = swidget->private;
+
+			if (pipeline && pipeline->pipeline_id == host_widget->pipeline_id) {
+				(*route_list)->pipeline_widget = swidget;
+				break;
+			}
+		}
+	if (!(*route_list)->pipeline_widget) {
+		dev_err(scomp->dev, "error: cant find pipeline widget with pipeline ID: %d\n",
+			host_widget->pipeline_id);
+		return -ENOENT;
+	}
+
+	/* add connected widgets in the current direction */
+	do {
+		found_next_widget = false;
+		list_for_each_entry(sroute, &sdev->route_list, list) {
+			/* get endpoint and next widget name based on direction */
+			if (dir == SNDRV_PCM_STREAM_PLAYBACK) {
+				route_endpoint = sroute->route->source;
+				next_widget_name = sroute->route->sink;
+			} else {
+				route_endpoint = sroute->route->sink;
+				next_widget_name = sroute->route->source;
+			}
+
+			/* add next widget to the route_list if available */
+			if (!strcmp(route_endpoint, next_widget->widget->name)) {
+				struct snd_sof_widget *swidget = NULL;
+
+				swidget = snd_sof_find_swidget_by_name(scomp, next_widget_name);
+				if (!swidget)
+					return -ENOENT;
+
+				found_next_widget = true;
+
+				next_widget = swidget;
+
+				ret = sof_expand_route_list(spcm, dir, next_widget,
+							    (*route_list)->num_widgets + 1);
+				if (ret < 0)
+					return ret;
+			}
+		}
+
+		/* no more widgets in the route */
+		if (!found_next_widget)
+			break;
+	} while (found_next_widget);
+
+	return 0;
+}
+
+/* helper to set up the route_list for all PCM streams */
+int sof_pcm_route_set_up_all(struct snd_soc_component *scomp)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_widget *host_widget;
+	struct snd_sof_pcm *spcm;
+	int ret;
+	int dir;
+
+	/* set up route_list for all PCM streams */
+	list_for_each_entry(spcm, &sdev->pcm_list, list) {
+		for_each_pcm_streams(dir) {
+			host_widget = NULL;
+			/* check if PCM is playback/capture capable */
+			if (dir == SNDRV_PCM_STREAM_PLAYBACK && !spcm->pcm.playback)
+				continue;
+			if (dir == SNDRV_PCM_STREAM_CAPTURE && !spcm->pcm.capture)
+				continue;
+
+			/* find host widget for PCM stream */
+			host_widget = snd_sof_find_swidget_by_id(scomp, spcm->stream[dir].comp_id);
+			if (!host_widget) {
+				dev_err(scomp->dev, "error: failed to find host widget for PCM %d\n",
+					spcm->stream[dir].comp_id);
+				return -ENODEV;
+			}
+
+			ret = sof_route_add_connected_widgets(scomp, spcm, host_widget, dir);
+			if (ret < 0) {
+				dev_err(scomp->dev, "error: failed to add connected widgets %d\n",
+					ret);
+				return ret;
+			}
+		}
+	}
+
+	return 0;
+}
+
 /*
  * helper to determine if there are only D0i3 compatible
  * streams active
@@ -415,6 +548,33 @@ snd_sof_find_swidget_sname(struct snd_soc_component *scomp,
 		    swidget->id == type)
 			return swidget;
 	}
+
+	return NULL;
+}
+
+/* find widget by name */
+struct snd_sof_widget *snd_sof_find_swidget_by_name(struct snd_soc_component *scomp,
+						    const char *name)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_widget *swidget;
+
+	list_for_each_entry(swidget, &sdev->widget_list, list)
+		if (!strcmp(name, swidget->widget->name))
+			return swidget;
+
+	return NULL;
+}
+
+/* find widget by comp_id */
+struct snd_sof_widget *snd_sof_find_swidget_by_id(struct snd_soc_component *scomp, int id)
+{
+	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct snd_sof_widget *swidget;
+
+	list_for_each_entry(swidget, &sdev->widget_list, list)
+		if (swidget->comp_id == id)
+			return swidget;
 
 	return NULL;
 }
