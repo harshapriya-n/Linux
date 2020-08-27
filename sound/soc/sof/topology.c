@@ -3641,6 +3641,14 @@ static void sof_complete(struct snd_soc_component *scomp)
 	ret = sof_pcm_route_set_up_all(scomp);
 	if (ret < 0)
 		dev_warn(scomp->dev, "failed to set up route for all PCM streams\n");
+
+	/*
+	 * Destroy all pipelines and free all widgets. The widgets required will be set up when
+	 * a PCM is opened.
+	 */
+	ret = sof_pipelines_destroy_all(scomp);
+	if (ret < 0)
+		dev_warn(scomp->dev, "failed to free all pipelines\n");
 }
 
 /* manifest - optional to inform component of manifest */

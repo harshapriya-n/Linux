@@ -291,6 +291,12 @@ static int sof_pcm_prepare(struct snd_soc_component *component,
 	dev_dbg(component->dev, "pcm: prepare stream %d dir %d\n",
 		spcm->pcm.pcm_id, substream->stream);
 
+	ret = sof_pcm_pipeline_set_up(component, spcm, substream->stream);
+	if (ret < 0) {
+		dev_err(component->dev, "error: failed to set up pipeline for stream %d dir %d\n",
+			spcm->pcm.pcm_id, substream->stream);
+	}
+
 	/* set hw_params */
 	ret = sof_pcm_hw_params(component,
 				substream, &spcm->params[substream->stream]);
@@ -475,6 +481,11 @@ static int sof_pcm_open(struct snd_soc_component *component,
 	dev_dbg(component->dev, "pcm: open stream %d dir %d\n",
 		spcm->pcm.pcm_id, substream->stream);
 
+	ret = sof_pcm_pipeline_set_up(component, spcm, substream->stream);
+	if (ret < 0) {
+		dev_err(component->dev, "error: failed to set up pipeline for stream %d dir %d\n",
+			spcm->pcm.pcm_id, substream->stream);
+	}
 
 	caps = &spcm->pcm.caps[substream->stream];
 
@@ -553,6 +564,11 @@ static int sof_pcm_close(struct snd_soc_component *component,
 		 * from happening
 		 */
 	}
+
+	err = sof_pcm_pipeline_destroy(component, spcm, substream->stream);
+	if (err < 0)
+		dev_err(component->dev, "error: failed to free pipeline for stream %d dir %d\n",
+			spcm->pcm.pcm_id, substream->stream);
 
 	return 0;
 }

@@ -156,15 +156,6 @@ static int sof_resume(struct device *dev, bool runtime_resume)
 			 ret);
 	}
 
-	/* restore pipelines */
-	ret = sof_restore_pipelines(sdev->dev);
-	if (ret < 0) {
-		dev_err(sdev->dev,
-			"error: failed to restore pipeline after resume %d\n",
-			ret);
-		return ret;
-	}
-
 	/* notify DSP of system resume */
 	ret = sof_send_pm_ctx_ipc(sdev, SOF_IPC_PM_CTX_RESTORE);
 	if (ret < 0)
