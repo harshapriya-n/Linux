@@ -10,6 +10,7 @@
 
 #include <linux/module.h>
 #include <sound/sof.h>
+#include "sof-audio.h"
 #include "sof-priv.h"
 
 static struct snd_soc_card sof_nocodec_card = {
@@ -20,7 +21,9 @@ static struct snd_soc_card sof_nocodec_card = {
 static int sof_nocodec_bes_setup(struct device *dev,
 				 const struct snd_sof_dsp_ops *ops,
 				 struct snd_soc_dai_link *links,
-				 int link_num, struct snd_soc_card *card)
+				 int link_num, struct snd_soc_card *card,
+				 int (*pcm_dai_link_fixup)(struct snd_soc_pcm_runtime *rtd,
+							   struct snd_pcm_hw_params *params))
 {
 	struct snd_soc_dai_link_component *dlc;
 	int i;
@@ -38,6 +41,8 @@ static int sof_nocodec_bes_setup(struct device *dev,
 					       "NoCodec-%d", i);
 		if (!links[i].name)
 			return -ENOMEM;
+
+		links[i].stream_name = links[i].name;
 
 		links[i].cpus = &dlc[0];
 		links[i].codecs = &dlc[1];
@@ -57,6 +62,8 @@ static int sof_nocodec_bes_setup(struct device *dev,
 			links[i].dpcm_playback = 1;
 		if (ops->drv[i].capture.channels_min)
 			links[i].dpcm_capture = 1;
+
+		links[i].be_hw_params_fixup = pcm_dai_link_fixup;
 	}
 
 	card->dai_link = links;
@@ -65,8 +72,9 @@ static int sof_nocodec_bes_setup(struct device *dev,
 	return 0;
 }
 
-int sof_nocodec_setup(struct device *dev,
-		      const struct snd_sof_dsp_ops *ops)
+int sof_nocodec_setup(struct device *dev, const struct snd_sof_dsp_ops *ops,
+		      int (*pcm_dai_link_fixup)(struct snd_soc_pcm_runtime *rtd,
+						struct snd_pcm_hw_params *params))
 {
 	struct snd_soc_dai_link *links;
 
@@ -77,7 +85,7 @@ int sof_nocodec_setup(struct device *dev,
 		return -ENOMEM;
 
 	return sof_nocodec_bes_setup(dev, ops, links, ops->num_drv,
-				     &sof_nocodec_card);
+				     &sof_nocodec_card, pcm_dai_link_fixup);
 }
 EXPORT_SYMBOL(sof_nocodec_setup);
 
@@ -86,6 +94,7 @@ static int sof_nocodec_probe(struct platform_device *pdev)
 	struct snd_soc_card *card = &sof_nocodec_card;
 
 	card->dev = &pdev->dev;
+	card->topology_shortname_created = true;
 
 	return devm_snd_soc_register_card(&pdev->dev, card);
 }
