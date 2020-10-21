@@ -26,6 +26,7 @@
 #define SOF_DBG_TEXT		BIT(3)
 #define SOF_DBG_PCI		BIT(4)
 #define SOF_DBG_RETAIN_CTX	BIT(5)	/* prevent DSP D3 on FW exception */
+#define SOF_DBG_FORCE_ERR_LEVEL	BIT(6) /* used to dump dsp status with error log level */
 
 /* global debug state set by SOF_DBG_ flags */
 extern int sof_core_debug;
