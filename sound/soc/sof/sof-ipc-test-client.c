@@ -239,13 +239,6 @@ static int sof_ipc_test_probe(struct auxiliary_device *auxdev,
 	struct sof_client_dev *cdev = auxiliary_dev_to_sof_client_dev(auxdev);
 	struct sof_ipc_client_data *ipc_client_data;
 
-	/*
-	 * The auxiliary device has a usage count of 0 even before runtime PM
-	 * is enabled. So, increment the usage count to let the device
-	 * suspend after probe is complete.
-	 */
-	pm_runtime_get_noresume(&auxdev->dev);
-
 	/* allocate memory for client data */
 	ipc_client_data = devm_kzalloc(&auxdev->dev, sizeof(*ipc_client_data), GFP_KERNEL);
 	if (!ipc_client_data)
@@ -272,10 +265,9 @@ static int sof_ipc_test_probe(struct auxiliary_device *auxdev,
 	/* enable runtime PM */
 	pm_runtime_set_autosuspend_delay(&auxdev->dev, SOF_IPC_CLIENT_SUSPEND_DELAY_MS);
 	pm_runtime_use_autosuspend(&auxdev->dev);
-	pm_runtime_set_active(&auxdev->dev);
 	pm_runtime_enable(&auxdev->dev);
 	pm_runtime_mark_last_busy(&auxdev->dev);
-	pm_runtime_put_autosuspend(&auxdev->dev);
+	pm_runtime_idle(&auxdev->dev);
 
 	return 0;
 }

@@ -300,13 +300,6 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 	struct snd_soc_dai_link *links;
 	int ret;
 
-	/*
-	 * The auxiliary device has a usage count of 0 even before runtime PM
-	 * is enabled. So, increment the usage count to let the device
-	 * suspend after probe is complete.
-	 */
-	pm_runtime_get_noresume(&auxdev->dev);
-
 	/* register probes component driver and dai */
 	ret = devm_snd_soc_register_component(&auxdev->dev, &sof_probes_component,
 					      sof_probes_dai_drv, ARRAY_SIZE(sof_probes_dai_drv));
@@ -370,10 +363,9 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 	/* enable runtime PM */
 	pm_runtime_set_autosuspend_delay(&auxdev->dev, SOF_PROBES_SUSPEND_DELAY_MS);
 	pm_runtime_use_autosuspend(&auxdev->dev);
-	pm_runtime_set_active(&auxdev->dev);
 	pm_runtime_enable(&auxdev->dev);
 	pm_runtime_mark_last_busy(&auxdev->dev);
-	pm_runtime_put_autosuspend(&auxdev->dev);
+	pm_runtime_idle(&auxdev->dev);
 
 	return 0;
 }
