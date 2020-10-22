@@ -407,10 +407,14 @@ int hda_dsp_cl_boot_firmware(struct snd_sof_dev *sdev)
 	 * should be ready for code loading and firmware boot
 	 */
 	ret = cl_copy_fw(sdev, stream);
-	if (!ret)
+	if (!ret) {
 		dev_dbg(sdev->dev, "Firmware download successful, booting...\n");
-	else
+	} else {
 		dev_err(sdev->dev, "error: load fw failed ret: %d\n", ret);
+
+		/* dump dsp registers and disable DSP upon error */
+		hda_dsp_dump(sdev, SOF_DBG_REGS | SOF_DBG_PCI | SOF_DBG_MBOX);
+	}
 
 cleanup:
 	/*
@@ -433,9 +437,6 @@ cleanup:
 	 */
 	if (!ret)
 		return chip_info->init_core_mask;
-
-	/* dump dsp registers and disable DSP upon error */
-	hda_dsp_dump(sdev, SOF_DBG_REGS | SOF_DBG_PCI | SOF_DBG_MBOX);
 
 	/* disable DSP */
 	snd_sof_dsp_update_bits(sdev, HDA_DSP_PP_BAR,
